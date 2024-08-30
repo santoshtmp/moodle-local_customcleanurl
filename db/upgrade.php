@@ -20,49 +20,24 @@
  * @copyright  2024 https://santoshmagar.com.np/
  * @author     santoshtmp7
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * 
+ *
+ *  
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-
-/**
- * From moodle 4.4 callback are managed through callback hook
- * https://moodledev.io/docs/4.5/apis/core/hooks
- * https://docs.moodle.org/dev/Output_callbacks#before_http_headers
- * https://docs.moodle.org/dev/Callbacks
- */
-function local_customcleanurl_before_http_headers()
+function xmldb_local_customcleanurl_upgrade($oldversion)
 {
-    \local_customcleanurl\local\helper::urlrewriteclass_initialize();
+    global $CFG, $DB;
+
+    $dbman = $DB->get_manager();
+
+    $new_version = 2024071605;
+    if ($oldversion < $new_version) {
+        \local_customcleanurl\local\htaccess::set_htaccess();
+         // Apply savepoint reached.
+         upgrade_plugin_savepoint(true, $new_version, 'local', 'customcleanurl');
+    }
+
+    return true;
 }
-
-/**
- * https://docs.moodle.org/dev/Login_callbacks#after_config
- */
-function local_customcleanurl_after_config()
-{
-    \local_customcleanurl\local\helper::urlrewriteclass_initialize();
-}
-
-// 
-/**
- * 
- */
-// function local_customcleanurl_before_standard_html_head()
-// {
-// }
-
-/**
- * @return string
- */
-// function local_customcleanurl_render_navbar_output()
-// {
-// }
-
-/**
- * Callback allowing to add contetnt inside the region-main, in the very end
- *
- * @return string
- */
-// function local_customcleanurl_before_footer() {}

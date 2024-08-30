@@ -15,21 +15,39 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Language file.
  * 
  * @package    local_customcleanurl
  * @copyright  2024 https://santoshmagar.com.np/
  * @author     santoshtmp7
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * 
+ *
+ *  
  */
 
+namespace local_customcleanurl;
+
+use cache;
+use moodle_url;
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['pluginname'] = 'Custom Clean URL';
-$string['pluginname_desc'] = 'Local plugin to customize moodle page url';
-$string['configtitle'] = 'Custom Clean URL Settings';
-// 
-$string['cachedef_clean_url'] = 'Clean URL Cache';
-$string['cachedef_unclean_url'] = 'Default moodle URL cache';
+/**
+ * Event observer for local_customcleanurl.
+ */
+class observer
+{
+
+    /**
+     * hook course_updated event
+     * @param \core\event\course_course_updated $event
+     */
+    public static function course_updated(\core\event\course_updated $event)
+    {
+        $courseid = $event->get_data()['objectid'];
+        $url = new moodle_url('/course/view.php', array('id' => $courseid));
+        $cache = cache::make('local_cleanurls', 'outgoing');
+        // $cache->delete($url->raw_out(false));
+        $cleanedurl = \local_customcleanurl\local\clean_url::clean($url);
+        $cache->set($url->raw_out(false), $cleanedurl);
+    }
+}

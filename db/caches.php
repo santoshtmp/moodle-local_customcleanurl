@@ -20,49 +20,15 @@
  * @copyright  2024 https://santoshmagar.com.np/
  * @author     santoshtmp7
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * 
+ *
+ * https://moodledev.io/docs/4.5/apis/subsystems/muc
+ *  
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 
-/**
- * From moodle 4.4 callback are managed through callback hook
- * https://moodledev.io/docs/4.5/apis/core/hooks
- * https://docs.moodle.org/dev/Output_callbacks#before_http_headers
- * https://docs.moodle.org/dev/Callbacks
- */
-function local_customcleanurl_before_http_headers()
-{
-    \local_customcleanurl\local\helper::urlrewriteclass_initialize();
-}
-
-/**
- * https://docs.moodle.org/dev/Login_callbacks#after_config
- */
-function local_customcleanurl_after_config()
-{
-    \local_customcleanurl\local\helper::urlrewriteclass_initialize();
-}
-
-// 
-/**
- * 
- */
-// function local_customcleanurl_before_standard_html_head()
-// {
-// }
-
-/**
- * @return string
- */
-// function local_customcleanurl_render_navbar_output()
-// {
-// }
-
-/**
- * Callback allowing to add contetnt inside the region-main, in the very end
- *
- * @return string
- */
-// function local_customcleanurl_before_footer() {}
+$definitions = [
+    'clean_url'   => ['mode' => cache_store::MODE_APPLICATION],
+    'default_url' => ['mode' => cache_store::MODE_APPLICATION],
+];

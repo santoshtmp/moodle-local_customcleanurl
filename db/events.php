@@ -20,36 +20,16 @@
  * @copyright  2024 https://santoshmagar.com.np/
  * @author     santoshtmp7
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * 
+ *
+ * https://docs.moodle.org/dev/Events_API
+ *  
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-/**
- * define new url path and the actual page url path
- */
-function get_customcleanurl_route()
-{
-    $routes = [
-        '/404' => '/local/customcleanurl/locallib/404.php',
-    ];
-
-    return $routes;
-}
-
-/**
- * customcleanurl error_page
- */
-if (!function_exists('customcleanurl_error_page')) {
-    function customcleanurl_error_page()
-    {
-        global $CFG;
-        header("HTTP/1.0 404 Not Found");
-        http_response_code('404');
-        $_SERVER['REDIRECT_STATUS'] = '404';
-        $filepath = $CFG->dirroot . '/local/customcleanurl/locallib/404.php';
-        chdir(dirname($filepath));
-        require($filepath);
-        die();
-    }
-}
+$observers = array(
+    array(
+        'eventname'   => '\core\event\course_updated',
+        'callback'    => '\local_customcleanurl\event\observer::course_updated',
+    ),
+);
