@@ -14,7 +14,7 @@ customcleanurl main idea is to convert the moodle url in more readable format by
 
 
 ## Modify Apache .htaccess file
-#### ...................................................
+```
 # BEGIN_MOODLE_LOCAL_CUSTOMCLEANURL
 # DO NOT EDIT route
 <IfModule mod_rewrite.c>
@@ -43,5 +43,7 @@ Options -MultiViews
 Options -Indexes
 
 # END_MOODLE_LOCAL_CUSTOMCLEANURL
+```
+
 #### ...................................................
 
