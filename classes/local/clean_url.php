@@ -25,6 +25,7 @@
 
 namespace local_customcleanurl\local;
 
+use local_customcleanurl\local\helper;
 use moodle_url;
 
 defined('MOODLE_INTERNAL') || die();
@@ -50,46 +51,48 @@ class clean_url
         $this->path = $this->originalurl->get_path(false);
         $this->params = $this->originalurl->params();
         $this->cleanedurl = null;
-        // var_dump($this->url_except_domain); die;
         $this->execute();
     }
 
-
     private function execute()
     {
+        // check emable_customcleanurl
+        $emable_customcleanurl = get_config('local_customcleanurl', 'emable_customcleanurl');
+        if (!$emable_customcleanurl || empty($emable_customcleanurl)) {
+            return;
+        }
         // check the cache
         $cache_clean_url = \local_customcleanurl\local\helper::check_clean_url_cached($this->originalurl);
         if ($cache_clean_url) {
             $this->cleanedurl = $cache_clean_url;
             return;
         }
-
-        // // The order of the checks below is important.
-        // if ($this->check_test_url() || $this->check_cleaner_disabled() || $this->check_cached()) {
-        //     return;
-        // }
+        // 
         $this->clean_path();
         $this->create_cleaned_url();
     }
 
-
+    // 
     private function remove_index_php($remove_last_path = '')
     {
-        // Remove /index.php from end.
-        if (substr($this->path, -10) == '/index.php') {
-            $this->path = substr($this->path, 0, -10);
-        }
-        // remove .php
-        if (substr($this->path, -4) == '.php') {
-            $this->path = substr($this->path, 0, -4);
-        }
         // removed defined path
         if ($remove_last_path) {
             if (substr($this->path, -strlen($remove_last_path)) == $remove_last_path) {
-                $this->path = substr($this->path, 0, -strlen($remove_last_path));
+                return substr($this->path, 0, -strlen($remove_last_path));
             }
         }
+
+        // Remove /index.php from end.
+        if (substr($this->path, -10) == '/index.php') {
+            return substr($this->path, 0, -10);
+        }
+        // remove .php
+        if (substr($this->path, -4) == '.php') {
+            return substr($this->path, 0, -4);
+        }
     }
+
+    // 
     private function create_cleaned_url()
     {
         global $CFG;
@@ -104,11 +107,7 @@ class clean_url
             }
             // 
             $this->cleanedurl = new moodle_url($this->path);
-            // cache
-            $cache_clean_url = \cache::make('local_customcleanurl', 'clean_url');
-            $cache_clean_url->set($this->originalurl->raw_out(false), $this->cleanedurl->raw_out(false));
-            $cache_default_url = \cache::make('local_customcleanurl', 'default_url');
-            $cache_default_url->set($this->cleanedurl->raw_out(false), $this->originalurl->raw_out(false));
+            \local_customcleanurl\local\helper::set_url_cache($this->originalurl, $this->cleanedurl);
             return;
         }
     }
@@ -162,11 +161,11 @@ class clean_url
         $course_id = isset($this->params['id']) ? $this->params['id'] : '';
         $category_id = isset($this->params['categoryid']) ? $this->params['categoryid'] : '';
         // filter paths
-        $this->remove_index_php('/view');
+        $clean_newpath = $this->remove_index_php('/view.php');
         if ($course_id) {
             $course = get_course($course_id);
             if ($course) {
-                $clean_newpath = $this->path . '/' . self::url_slug($course->shortname);
+                $clean_newpath = $clean_newpath . '/' . helper::url_slug($course->shortname);
                 if ($this->check_path_allowed($clean_newpath)) {
                     $this->path = $clean_newpath;
                 }
@@ -175,7 +174,7 @@ class clean_url
             global $DB;
             $course_categories = $DB->get_record('course_categories', ['id' => $category_id]);
             if ($course_categories) {
-                $clean_newpath = $this->path . '/category/' . self::url_slug($course_categories->name) . '-' . $course_categories->id;
+                $clean_newpath = $clean_newpath . '/category/' . $course_categories->id . '/' . helper::url_slug($course_categories->name);
                 if ($this->check_path_allowed($clean_newpath)) {
                     $this->path = $clean_newpath;
                 }
@@ -197,10 +196,10 @@ class clean_url
         global $DB;
         $user =  $DB->get_record('user', ['id' => $this->params['id']]);
         if ($user) {
-            $this->remove_index_php();
-            $newpath = $this->path . '/' . urlencode(strtolower($user->username));
-            if ($this->check_path_allowed($newpath)) {
-                $this->path = $newpath;
+            $clean_newpath = $this->remove_index_php();
+            $clean_newpath = $clean_newpath . '/' . urlencode(strtolower($user->username));
+            if ($this->check_path_allowed($clean_newpath)) {
+                $this->path = $clean_newpath;
             }
         }
         return $user;
@@ -211,9 +210,5 @@ class clean_url
         global $CFG;
 
         return (!is_dir($CFG->dirroot . $path) && !is_file($CFG->dirroot . $path . ".php"));
-    }
-    private function url_slug($name)
-    {
-        return str_replace(' ', '-', strtolower($name));
     }
 }

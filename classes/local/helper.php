@@ -45,13 +45,34 @@ class helper
     // Then return the url if present
     public static function get_default_url()
     {
-        global $CFG;
-        $url = $CFG->wwwroot . $_SERVER['REQUEST_URI'];
+        global $CFG, $DB;
+        // check emable_customcleanurl
+        $emable_customcleanurl = get_config('local_customcleanurl', 'emable_customcleanurl');
+        if (!$emable_customcleanurl || empty($emable_customcleanurl)) {
+            return;
+        }
+        $request_url =  $_SERVER['REQUEST_URI'];
+        $request_moodle_url = new moodle_url($request_url);
         self::check_restricted_param();
+        $url = '';
         $cache_default_url = \cache::make('local_customcleanurl', 'default_url');
-        $cached_value = $cache_default_url->get($url);
+        $cached_value = $cache_default_url->get($request_moodle_url->out(false));
         if ($cached_value) {
-            $url = new moodle_url($cached_value);
+            $url = $cached_value;
+        } else {
+            $check_custom_url = $DB->get_record('local_customcleanurl', ['custom_url' => $request_moodle_url->out(false)]);
+            if ($check_custom_url) {
+                $url = $check_custom_url->default_url;
+            } else {
+                $check_custom_url_path = $DB->get_record('local_customcleanurl', ['custom_url' => $request_moodle_url->get_path(false)]);
+                if ($check_custom_url_path) {
+                    $url = $check_custom_url_path->default_url;
+                }
+            }
+        }
+        // 
+        if ($url) {
+            $url = new moodle_url($url);
             foreach ($url->params() as $k => $v) {
                 $v = str_replace('+', ' ', $v);
                 $_GET[$k] = $v;
@@ -96,12 +117,12 @@ class helper
     // check_restricted_param
     public static function check_restricted_param()
     {
-        if (isset($_REQUEST['id']) || isset($_GET['id'])) {
-            echo "id parameter is restricted in this url";
+        if (isset($_GET['id'])) {
+            echo "GET id parameter is restricted in this url";
             die;
         }
-        if (isset($_REQUEST['categoryid']) || isset($_GET['categoryid'])) {
-            echo "categoryid parameter is restricted in this url";
+        if (isset($_GET['categoryid'])) {
+            echo "GET categoryid parameter is restricted in this url";
             die;
         }
     }
@@ -116,5 +137,11 @@ class helper
             return;
         }
         $CFG->urlrewriteclass = '\\local_customcleanurl\\url_rewriter';
+    }
+
+    //url_slug
+    public static function url_slug($name)
+    {
+        return str_replace(' ', '-', strtolower($name));
     }
 }

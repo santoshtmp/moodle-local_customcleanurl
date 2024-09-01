@@ -28,15 +28,35 @@ defined('MOODLE_INTERNAL') || die();
 
 function xmldb_local_customcleanurl_upgrade($oldversion)
 {
-    global $CFG, $DB;
+    global $DB;
 
     $dbman = $DB->get_manager();
 
-    $new_version = 2024071605;
+    $new_version = 2024083100;
     if ($oldversion < $new_version) {
+        // set updated htaccess
         \local_customcleanurl\local\htaccess::set_htaccess();
-         // Apply savepoint reached.
-         upgrade_plugin_savepoint(true, $new_version, 'local', 'customcleanurl');
+
+        // Define table local_customcleanurl to be created.
+        $table = new xmldb_table('local_customcleanurl');
+
+        // Adding fields to table local_customcleanurl.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('default_url', XMLDB_TYPE_CHAR, '225', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('custom_url', XMLDB_TYPE_CHAR, '225', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table local_customcleanurl.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+        // Conditionally launch create table for local_customcleanurl.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Apply savepoint reached.
+        upgrade_plugin_savepoint(true, $new_version, 'local', 'customcleanurl');
     }
 
     return true;

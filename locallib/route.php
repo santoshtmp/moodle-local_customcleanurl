@@ -31,22 +31,6 @@ $url_path = parse_url($url, PHP_URL_PATH); // $url_path = $PAGE->url->get_path(f
 $url_query = ($url_query = parse_url($url, PHP_URL_QUERY)) ? '?' . $url_query : ''; // $url_query = $PAGE->url->params(); //
 \local_customcleanurl\local\helper::urlrewriteclass_initialize();
 
-// /**
-//  * check if new path and file exist or not
-//  */
-// require_once('route/web_route_define.php');
-// $route_define = get_customcleanurl_route();
-// foreach ($route_define as $new_path => $actual_path) {
-//     if (($url_path == $new_path) || ($url_path == $new_path . '/')) {
-//         $filepath = $CFG->dirroot . $actual_path;
-//         if (file_exists($filepath)) {
-//             chdir(dirname($filepath));
-//             require($filepath);
-//             die();
-//         }
-//     }
-// }
-
 
 /**
  * check if clean url is present 

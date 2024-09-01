@@ -1,4 +1,3 @@
-<?php
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -15,30 +14,18 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * 
- * @package    local_customcleanurl
+ * AMD module
+ *
+ * @package
  * @copyright  2024 https://santoshmagar.com.np/
  * @author     santoshtmp7
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
- *  
  */
 
-namespace local_customcleanurl\event;
+// import $ from 'jquery';
 
-use moodle_url;
 
-defined('MOODLE_INTERNAL') || die();
-
-/**
- * Event observer for local_customcleanurl.
- */
-class observer
-{
-
-    /**
-     * hook course_updated event
-     * @param \core\event\course_course_updated $event
-     */
-    // public static function course_updated(\core\event\course_updated $event) {}
-}
+export const init = () => {
+    // window.console.log('consoleeeeeeeeeeee');
+};

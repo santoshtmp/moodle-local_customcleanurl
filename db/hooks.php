@@ -35,6 +35,11 @@ $callbacks = [
         'callback' => [local_customcleanurl\hooks\hook_callbacks::class, 'before_http_headers'],
         'priority' => 0,
     ],
+    [
+        'hook' => core_course\hook\after_course_updated::class,
+        'callback' => [local_customcleanurl\hooks\hook_callbacks::class, 'after_course_updated'],
+        'priority' => 0,
+    ],
     // [
     //     'hook' => core\hook\output\before_standard_head_html_generation::class,
     //     'callback' => [local_customcleanurl\hooks\hook_callbacks::class, 'before_standard_head_html_generation'],

@@ -33,3 +33,17 @@ $string['configtitle'] = 'Custom Clean URL Settings';
 // 
 $string['cachedef_clean_url'] = 'Clean URL Cache';
 $string['cachedef_unclean_url'] = 'Default moodle URL cache';
+// 
+$string['emable_customcleanurl_desc'] = 'This will change the default moodle url to clean url. 
+<br> Example: 
+<br>    your_domain/course/view.php?id=ID => your_domain/course/course_shot_name
+<br>    your_domain/course/index.php?categoryid=ID => your_domain/course/category/ID/category_name
+<br>    your_domain/course/edit.php?id=ID => your_domain/course/edit/course_shot_name
+<br>    your_domain/user/profile.php?id=ID => your_domain/user/profile/username
+<br>    and other as defined.
+';
+$string['default_url'] = "default url";
+$string['default_url_help'] = 'Default original moodle url. <br> It should be .php url and must start with your_domain or / .<br> Example: your_domain/course/view.php?id=7';
+$string['custom_url'] = "clean custom url";
+$string['custom_url_help'] = 'Clean custom url. <br> It should not match moodle default url, which is without .php file and moodle dir url.<br> Example: your_domain/course/math';
+

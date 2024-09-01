@@ -62,14 +62,19 @@ class url_rewriter implements \core\output\url_rewriter
 
         $orig = $PAGE->url->raw_out(false);
         $output = '';
+
+        // $course_url = new moodle_url('/course/view.php', array('id' => 7));
+        // $cache_clean_url = \cache::make('local_customcleanurl', 'clean_url');
+        // $delete = $cache_clean_url->delete($course_url->raw_out(false));
+        // var_dump($delete); 
         // $cat_url = new moodle_url('/course/index.php', ['categoryid' => 1]);
         // $output .= " <br><br><br><br> ";
         // $output .=  $clean_url . ' <br> url_rewriter html_head_setup <br> ' . $orig;
         // $output .= " <br><br><br><br> ";
-        // $output .= $cat_url->raw_out(false);
+        // $output .= $course_url->raw_out(false);
         // $output .= " <br><br> ";
         // $output .= $cat_url->out(false);
-
+        // 
 
         if (isset($CFG->uncleanedurl)) {
             // This page came through router uncleaning.

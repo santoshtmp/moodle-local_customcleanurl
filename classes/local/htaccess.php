@@ -28,6 +28,23 @@ namespace local_customcleanurl\local;
 class htaccess
 {
 
+    public static function check_rewrite_htaccess()
+    {
+        global $CFG;
+        $htaccess_file_path = $CFG->dirroot . '/.htaccess';
+        try {
+            if (file_exists($htaccess_file_path)) {
+                $contents = file_get_contents($htaccess_file_path);
+                return str_contains($contents, self::get_default_htaccess_content());
+            } else {
+                return false;
+            }
+            return true;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
     /**
      * used during install and upgrade
      */

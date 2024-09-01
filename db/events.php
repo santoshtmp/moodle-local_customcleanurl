@@ -28,8 +28,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $observers = array(
-    array(
-        'eventname'   => '\core\event\course_updated',
-        'callback'    => '\local_customcleanurl\event\observer::course_updated',
-    ),
+    // array(
+    //     'eventname'   => '\core\event\course_updated',
+    //     'callback'    => '\local_customcleanurl\event\observer::course_updated',
+    // ),
 );
