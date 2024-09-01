@@ -12,6 +12,8 @@ customcleanurl main idea is to convert the moodle url in more readable format by
     your_domain/user/profile.php?id=ID => your_domain/user/profile/username
 5. Other as defined.
 
+## Installation
+You can download as a zip from github then extract into your_moodle/local/customcleanurl/
 
 ## Modify Apache .htaccess file
 ```
@@ -45,5 +47,7 @@ Options -Indexes
 # END_MOODLE_LOCAL_CUSTOMCLEANURL
 ```
 
-#### ...................................................
+## Screenshot
+![Clean custom url setting](./pix/screenshot_custom_clean_settings.png)
+![Define custom url](./pix/screenshot_define_custom_url.png)
 
