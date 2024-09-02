@@ -51,3 +51,8 @@ Options -Indexes
 ![Clean custom url setting](./pix/screenshot_custom_clean_settings.png)
 ![Define custom url](./pix/screenshot_define_custom_url.png)
 
+## Reference : 
+1. https://moodledev.io/docs/4.5/apis/core/hooks
+2. https://docs.moodle.org/dev/Callbacks 
+3. https://phpdoc.moodledev.io/main/d4/dbf/interfacecore_1_1output_1_1url__rewriter.html
+4. https://github.com/brendanheywood/moodle-local_cleanurls
