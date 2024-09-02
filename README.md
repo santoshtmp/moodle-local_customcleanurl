@@ -1,5 +1,5 @@
 # customcleanurl
-customcleanurl main idea is to convert the moodle url in more readable format by removing id parameter
+customcleanurl main idea is to convert the moodle url in more user readable format and SEO friendly url.
 
 ## For Example:
 1. Course View Page URL
@@ -49,7 +49,7 @@ Options -Indexes
 
 ## Screenshot
 ![Clean custom url setting](./pix/screenshot_custom_clean_settings.png)
-![Define custom url](./pix/screenshot_define_custom_url.png)
+![Define custom url](./pix/screenshot_define_moodle_custom_url.png)
 
 ## Reference : 
 1. https://moodledev.io/docs/4.5/apis/core/hooks
