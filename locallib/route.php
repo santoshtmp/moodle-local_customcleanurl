@@ -47,7 +47,7 @@ if ($moodle_default_url) {
     if (is_file($file)) {
         chdir(dirname($file));
         $PAGE->set_url($moodle_default_url);
-        $CFG->moodle_default_url = $url;
+        $CFG->moodle_default_url = $moodle_default_url;
         require($file);
         die();
     }

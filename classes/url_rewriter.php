@@ -59,47 +59,30 @@ class url_rewriter implements \core\output\url_rewriter
     {
         global $CFG, $PAGE;
         $clean_url = $PAGE->url->out(false);
-
-        $orig = $PAGE->url->raw_out(false);
         $output = '';
 
-        // $course_url = new moodle_url('/course/view.php', array('id' => 7));
-        // $cache_clean_url = \cache::make('local_customcleanurl', 'clean_url');
-        // $delete = $cache_clean_url->delete($course_url->raw_out(false));
-        // var_dump($delete); 
-        // $cat_url = new moodle_url('/course/index.php', ['categoryid' => 1]);
-        // $output .= " <br><br><br><br> ";
-        // $output .=  $clean_url . ' <br> url_rewriter html_head_setup <br> ' . $orig;
-        // $output .= " <br><br><br><br> ";
-        // $output .= $course_url->raw_out(false);
-        // $output .= " <br><br> ";
-        // $output .= $cat_url->out(false);
-        // 
+        if (isset($CFG->moodle_default_url)) {
+            // This page came through local customcleanurl route .
+            var_dump($CFG->moodle_default_url->raw_out(false));
 
-        if (isset($CFG->uncleanedurl)) {
-            // This page came through router uncleaning.
-            $output .= self::get_base_href($CFG->uncleanedurl);
+            $output .= self::get_base_href($CFG->moodle_default_url->raw_out(false));
             $output .= self::get_anchor_fix_javascript($clean_url);
         } else {
             // This page came through its canonical/legacy address (not clean version).
-            // $orig = $PAGE->url->raw_out(false);
-            // if ($orig != $clean_url) {
-            //     // This page URL could have been cleaned up, so do it!
-            //     $output .= self::get_base_href($orig);
-            //     $output .= self::get_replacestate_script($clean_url);
-            //     $output .= self::get_anchor_fix_javascript($clean_url);
-            //     $output .= self::get_link_canonical();
-            //     self::mark_apache_note($clean_url);
-            // }
+            $orig = $PAGE->url->raw_out(false);
+            if ($orig != $clean_url) {
+                // This page URL could have been cleaned up, so do it!
+                $output .= self::get_base_href($orig);
+                $output .= self::get_replacestate_script($clean_url);
+                $output .= self::get_anchor_fix_javascript($clean_url);
+                $output .= self::get_link_canonical();
+                self::mark_apache_note($clean_url);
+            }
         }
 
         return $output;
     }
 
-    private static function get_base_href($uncleanedurl)
-    {
-        return "<base href=\"{$uncleanedurl}\">\n";
-    }
 
     /**
      * Rewire #anchor links dynamically
@@ -116,8 +99,6 @@ class url_rewriter implements \core\output\url_rewriter
     {
         return <<<HTML
 <script>
-        // testttt
-
 document.addEventListener('click', function (event) {
     var element = event.target;
     while (element.tagName != 'A') {
@@ -132,5 +113,73 @@ document.addEventListener('click', function (event) {
 }, true);
 </script>
 HTML;
+    }
+
+    /**
+     * One issue is that when rewriting urls we change their nesting and depth
+     * which means legacy urls in the codebase which do NOT use moodle_url and
+     * which are also relative links can be broken. To fix this we set the
+     * base href to the original uncleaned url.
+     *
+     * @param $uncleanedurl string
+     * @return string
+     */
+    private static function get_base_href($uncleanedurl)
+    {
+        return "<base href=\"{$uncleanedurl}\">\n";
+    }
+
+    /**
+     * If we have just loaded a legacy url AND we can clean it, instead of
+     * cleaning the url, caching it, and waiting for the user or someone
+     * else to come back again to see the good url, we can use html5
+     * replaceState to fix it imeditately without a page reload.
+     *
+     * Importantly this needs to happen before any JS on the page uses it,
+     * such as any analytics tracking.
+     *
+     * @param $clean string
+     * @return string
+     */
+    private static function get_replacestate_script($clean)
+    {
+        return "<script>history.replaceState && history.replaceState({}, '', '{$clean}');</script>\n";
+    }
+
+    /**
+     * Now that each page has two valid urls, we need to tell robots like
+     * GoogleBot that they are the same, otherwise Google may think they
+     * are low quality duplicates and possibly split pagerank between them.
+     *
+     * We specify that the clean one is the 'canonical' url so this is what
+     * will be shown in google search results pages.
+     * @return string
+     */
+    private static function get_link_canonical()
+    {
+        global $PAGE;
+
+        $cleanescaped = $PAGE->url->out(true);
+        return "<link rel=\"canonical\" href=\"{$cleanescaped}\" />\n";
+    }
+
+    /**
+     * At this point the url is already clean, so analytics which run in
+     * the page like Google Analytics will only use clean urls and so you
+     * will get nice drill down reports etc. However analytics software
+     * that parses the apache logs will see the raw original url. Worse
+     * it will see some as clean and some as unclean and get inconsistent
+     * data. To workaround this we publish an apache note so that we can
+     * put the clean url into the logs like this:
+     *
+     * LogFormat "...  %{CLEANURL}n ... \"%{User-Agent}i\"" ...
+     *
+     * @param $clean string
+     */
+    private static function mark_apache_note($clean)
+    {
+        if (function_exists('apache_note')) {
+            apache_note('CLEANURL', $clean);
+        }
     }
 }
