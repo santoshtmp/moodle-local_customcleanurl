@@ -18,7 +18,7 @@
  * 
  * @package    local_customcleanurl
  * @copyright  2024 https://santoshmagar.com.np/
- * @author     santoshtmp7
+ * @author     santoshtmp
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * 
  */
@@ -35,8 +35,9 @@ use moodle_url;
  * Hook callbacks for local_customcleanurl
  *
  * @package    local_customcleanurl
- * @copyright  santoshtmp7
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  2024 santoshtmp <https://santoshmagar.com.np/>
+ * @author     santoshtmp
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class hook_callbacks
 {
@@ -99,34 +100,4 @@ class hook_callbacks
         \local_customcleanurl\local\helper::set_url_cache($course_url, $clean_course_url);
         \local_customcleanurl\local\helper::set_url_cache($course_edit_url, $clean_course_edit_url);
     }
-
-    // /**
-    //  * Callback allowing to add to <head> of the page
-    //  *
-    //  * @param \core\hook\output\before_standard_head_html_generation $hook
-    //  */
-    // public static function before_standard_head_html_generation(\core\hook\output\before_standard_head_html_generation $hook): void
-    // {
-    //     global $CFG;
-    //     if (during_initial_install() || isset($CFG->upgraderunning)) {
-    //         // Do nothing during installation or upgrade.
-    //         return;
-    //     }
-    // }
-
-    // /**
-    //  * Callback allowing to add contetnt inside the region-main, in the very end
-    //  *
-    //  * @param \core\hook\output\before_footer_html_generation $hook
-    //  */
-    // public static function before_footer_html_generation(\core\hook\output\before_footer_html_generation $hook): void
-    // {
-    //     global $CFG;
-    //     if (during_initial_install() || isset($CFG->upgraderunning)) {
-    //         // Do nothing during installation or upgrade.
-    //         return;
-    //     }
-    //     $output = '';
-    //     $hook->add_html($output);
-    // }
 }

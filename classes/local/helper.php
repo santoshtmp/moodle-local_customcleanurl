@@ -18,7 +18,7 @@
  * 
  * @package    local_customcleanurl
  * @copyright  2024 https://santoshmagar.com.np/
- * @author     santoshtmp7
+ * @author     santoshtmp
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * 
  */
@@ -29,6 +29,15 @@ use moodle_url;
 
 defined('MOODLE_INTERNAL') || die();
 
+
+/**
+ * helper class for customcleanurl local
+ *
+ * @package    local_customcleanurl
+ * @copyright  2024 santoshtmp <https://santoshmagar.com.np/>
+ * @author     santoshtmp
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class helper
 {
 

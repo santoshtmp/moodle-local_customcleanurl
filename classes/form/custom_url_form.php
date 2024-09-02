@@ -18,14 +18,13 @@
  * 
  * @package    local_customcleanurl
  * @copyright  2024 https://santoshmagar.com.np/
- * @author     santoshtmp7
+ * @author     santoshtmp
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  *
  */
 
 namespace local_customcleanurl\form;
 
-use flexible_table;
 use moodle_url;
 use stdClass;
 
@@ -34,7 +33,14 @@ if (!defined('MOODLE_INTERNAL')) {
 }
 
 require_once($CFG->libdir . '/formslib.php');
-
+/**
+ * define custom url form
+ *
+ * @package    local_customcleanurl
+ * @copyright  2024 santoshtmp <https://santoshmagar.com.np/>
+ * @author     santoshtmp
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class custom_url_form extends \moodleform
 {
     // define form
@@ -184,7 +190,7 @@ class custom_url_form extends \moodleform
      */
     public static function data_save($data)
     {
-        global $DB, $CFG;
+        global $DB;
         $url = new moodle_url('/local/customcleanurl/define_custom_url.php');
         // Form was submitted and validated, process the data
         $message = "Error on submit";
@@ -238,6 +244,8 @@ class custom_url_form extends \moodleform
 
     /**
      * edit form data
+     * @param object $mform
+     * @param int $id
      */
     public static function display_edit($mform, $id)
     {

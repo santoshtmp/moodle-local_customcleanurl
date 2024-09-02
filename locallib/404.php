@@ -18,7 +18,7 @@
  * 
  * @package    local_customcleanurl
  * @copyright  2024 https://santoshmagar.com.np/
- * @author     santoshtmp7
+ * @author     santoshtmp
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * 
  */
@@ -56,9 +56,5 @@ $PAGE->add_body_class($strcssclass);
 // output content
 // page header
 echo $OUTPUT->header();
-
-echo "
-404 error page
-";
-
+echo "<div class='local_customcleanurl-404' > <p> 404 error page </p> </div>";
 echo $OUTPUT->footer();

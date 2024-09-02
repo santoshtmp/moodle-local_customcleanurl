@@ -18,8 +18,8 @@
  * Version information for customcleanurl.
  * 
  * @package    local_customcleanurl
- * @copyright  2024 https://santoshmagar.com.np/
- * @author     santoshtmp7
+ * @copyright  2024 santoshtmp <https://santoshmagar.com.np/>
+ * @author     santoshtmp
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * 
  */
@@ -27,9 +27,7 @@
 // This line protects the file from being accessed by a URL directly.
 defined('MOODLE_INTERNAL') || die();
 
-// This is the component name of the plugin - it always starts with type of plugin 
-// like 'mod_', 'local_','block_','theme_' ......
-// should be the same as the name of the folder.
+// This is the component name of the plugin
 $plugin->component = 'local_customcleanurl';
 
 // This is the named version.

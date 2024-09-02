@@ -18,7 +18,7 @@
  * 
  * @package    local_customcleanurl
  * @copyright  2024 https://santoshmagar.com.np/
- * @author     santoshtmp7
+ * @author     santoshtmp
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * 
  */
@@ -29,6 +29,15 @@ use local_customcleanurl\local\helper;
 use moodle_url;
 
 defined('MOODLE_INTERNAL') || die();
+
+/**
+ * class to clean the default moodle url
+ *
+ * @package    local_customcleanurl
+ * @copyright  2024 santoshtmp <https://santoshmagar.com.np/>
+ * @author     santoshtmp
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class clean_url
 {
 
@@ -44,7 +53,7 @@ class clean_url
     /** @var moodle_url */
     public $cleanedurl;
 
-    // clas constructor
+    // constructor
     public function __construct(moodle_url $url)
     {
         $this->originalurl = $url;
@@ -54,6 +63,10 @@ class clean_url
         $this->execute();
     }
 
+
+    /**
+     * execute
+     */
     private function execute()
     {
         // check emable_customcleanurl
@@ -72,10 +85,13 @@ class clean_url
         $this->create_cleaned_url();
     }
 
-    // 
+    /**
+     * remove index.php, .php or provided path string
+     * @param string $remove_last_path
+     */
     private function remove_index_php($remove_last_path = '')
     {
-        // removed defined path
+        // removed defined path from the end
         if ($remove_last_path) {
             if (substr($this->path, -strlen($remove_last_path)) == $remove_last_path) {
                 return substr($this->path, 0, -strlen($remove_last_path));
@@ -92,10 +108,9 @@ class clean_url
         }
     }
 
-    // 
+    // create_cleaned_url after the path is cleaned
     private function create_cleaned_url()
     {
-        global $CFG;
         // Add back moodle path.
         $this->path = ltrim($this->path, '/');
         if ($this->path) {
@@ -112,6 +127,8 @@ class clean_url
         }
     }
 
+
+    /** process to claan the default moodle url path */
     private function clean_path()
     {
 
@@ -186,7 +203,9 @@ class clean_url
 
 
 
-    // 
+    /**
+     * clean user profile url 
+     */
     private function clean_users_profile_url()
     {
         if (empty($this->params['id'])) {
@@ -205,6 +224,10 @@ class clean_url
         return $user;
     }
 
+    /**
+     * check if the final clean process path matches to existing moodle dir or file
+     * @param string $path 
+     */
     private function check_path_allowed($path)
     {
         global $CFG;

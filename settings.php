@@ -18,7 +18,7 @@
  * 
  * @package    local_customcleanurl
  * @copyright  2024 https://santoshmagar.com.np/
- * @author     santoshtmp7
+ * @author     santoshtmp
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * 
  */
@@ -36,13 +36,6 @@ if ($hassiteconfig) {
 
     // ------------------
     $settings = new admin_settingpage('local_customcleanurl', 'General Setting');
-
-    // // Heading.
-    // $name = 'local_customcleanurl/customcleanurl';
-    // $title = 'General Setting';
-    // $description = '';
-    // $setting = new admin_setting_heading($name, $title, $description);
-    // $settings->add($setting);
 
     $name = 'local_customcleanurl/emable_customcleanurl';
     $title = "Enable Customcleanurl";

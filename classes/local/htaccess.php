@@ -18,16 +18,25 @@
  * 
  * @package    local_customcleanurl
  * @copyright  2024 https://santoshmagar.com.np/
- * @author     santoshtmp7
+ * @author     santoshtmp
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * 
  */
 
 namespace local_customcleanurl\local;
 
+/**
+ * A class to check and modify htaccess file to rewrite the server route
+ *
+ * @package    local_customcleanurl
+ * @copyright  2024 santoshtmp <https://santoshmagar.com.np/>
+ * @author     santoshtmp
+ * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class htaccess
 {
 
+    /** check_rewrite_htaccess */
     public static function check_rewrite_htaccess()
     {
         global $CFG;
@@ -43,14 +52,14 @@ class htaccess
         } catch (\Exception $e) {
             return false;
         }
+        return false;
     }
 
     /**
-     * used during install and upgrade
+     * to set RewriteRule in htaccess, used during install, upgrade or customcleanurl setting check
      */
     public static function set_htaccess()
     {
-        // require_once(dirname(__FILE__) . '/../../../../config.php');
         global $CFG;
         $htaccess_file_path = $CFG->dirroot . '/.htaccess';
         try {
@@ -59,9 +68,6 @@ class htaccess
                 $contents = self::string_except_between_two_string($contents, '# BEGIN_MOODLE_LOCAL_CUSTOMCLEANURL', '# END_MOODLE_LOCAL_CUSTOMCLEANURL');
                 $update_content = $contents . "\n" . self::get_default_htaccess_content();
                 $update_content = trim($update_content);
-                // $file = fopen($htaccess_file_path, "w");
-                // fwrite($file, $update_content);
-                // fclose($file);
                 file_put_contents($htaccess_file_path, $update_content);
             } else {
                 $default_contents = self::get_default_htaccess_content();
@@ -76,7 +82,7 @@ class htaccess
     }
 
     /**
-     * used during uninstall
+     * To remove RewriteRule in htaccess, during uninstall
      */
     public static function unset_htaccess()
     {
@@ -101,6 +107,9 @@ class htaccess
 
     /**
      * return string 
+     * @param string $content_string
+     * @param string $starting_word
+     * @param string $ending_word
      */
     private static function string_except_between_two_string($content_string, $starting_word, $ending_word)
     {
@@ -115,7 +124,7 @@ class htaccess
 
 
     /**
-     * get default rule
+     * get default htaccess RewriteRule
      */
     private static function get_default_htaccess_content()
     {
