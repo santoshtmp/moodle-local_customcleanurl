@@ -15,32 +15,35 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version information for customcleanurl.
  * 
  * @package    local_customcleanurl
- * @copyright  2024 santoshtmp <https://santoshmagar.com.np/>
+ * @copyright  2024 https://santoshmagar.com.np/
  * @author     santoshtmp
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * 
  */
 
-// This line protects the file from being accessed by a URL directly.
+namespace local_customcleanurl\privacy;
+
 defined('MOODLE_INTERNAL') || die();
 
-// This is the component name of the plugin
-$plugin->component = 'local_customcleanurl';
+/**
+ * Privacy Subsystem for local_customcleanurl implementing null_provider.
+ *
+ * @copyright  2024 https://santoshmagar.com.np/
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class provider implements \core_privacy\local\metadata\null_provider
+{
 
-// This is the named version.
-$plugin->release = '1.0.0';
-
-// This is the version of the plugin.
-$plugin->version = 2024090200;
-
-// This is a stable release.
-$plugin->maturity = MATURITY_STABLE;
-
-// This is the version of Moodle this plugin requires.
-$plugin->requires = 2023041800;
-
-// This is the release of Moodle this plugin requires.
-$plugin->supported = [402, 404];
+    /**
+     * Get the language string identifier with the component's language
+     * file to explain why this plugin stores no data.
+     *
+     * @return  string
+     */
+    public static function get_reason(): string
+    {
+        return 'privacy:metadata';
+    }
+}

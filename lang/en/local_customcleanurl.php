@@ -46,4 +46,5 @@ $string['default_url'] = "default url";
 $string['default_url_help'] = 'Default original moodle url. <br> It should be .php url and must start with your_domain or / .<br> Example: your_domain/course/view.php?id=7';
 $string['custom_url'] = "clean custom url";
 $string['custom_url_help'] = 'Clean custom url. <br> It should not match moodle default url, which is without .php file and moodle dir url.<br> Example: your_domain/course/math';
+$string['privacy:metadata'] = 'local customcleanurl plugin does not store any data itself.';
 
