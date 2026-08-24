@@ -176,7 +176,13 @@ class helper {
         if (in_array('userurl', $cleanurltype) && !$responseuri && $parts[0] === 'user') {
             $user = $DB->get_record('user', ['username' => $uniquename]);
             if ($user && count($parts) === 3) {
-                $usesmartprofile = (bool)get_config('local_smartprofile', 'enableredirect') &&
+                $isclassic = (optional_param('classic', 0, PARAM_INT) == 1) ||
+                             (optional_param('noredirect', 0, PARAM_INT) == 1) ||
+                             !empty($requestmoodleurl->param('classic')) ||
+                             !empty($requestmoodleurl->param('noredirect'));
+
+                $usesmartprofile = !$isclassic &&
+                                   (bool)get_config('local_smartprofile', 'enableredirect') &&
                                    file_exists($CFG->dirroot . '/local/smartprofile/index.php');
                 if ($usesmartprofile) {
                     $responseuri = "/local/smartprofile/index.php?id=" . $user->id;

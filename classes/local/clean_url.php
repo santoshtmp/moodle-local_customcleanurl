@@ -263,6 +263,11 @@ class clean_url {
             return null;
         }
 
+        // If classic or noredirect is requested, keep the raw Moodle profile URL.
+        if (!empty($this->params['classic']) || !empty($this->params['noredirect'])) {
+            return null;
+        }
+
         global $DB, $CFG;
         if (!empty($CFG->subdirpath)) {
             if (strpos($this->path, $CFG->subdirpath) === 0) {
