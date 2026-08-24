@@ -176,7 +176,13 @@ class helper {
         if (in_array('userurl', $cleanurltype) && !$responseuri && $parts[0] === 'user') {
             $user = $DB->get_record('user', ['username' => $uniquename]);
             if ($user && count($parts) === 3) {
-                $responseuri = "/user/profile.php?id=" . $user->id;
+                $usesmartprofile = (bool)get_config('local_smartprofile', 'enableredirect') &&
+                                   file_exists($CFG->dirroot . '/local/smartprofile/index.php');
+                if ($usesmartprofile) {
+                    $responseuri = "/local/smartprofile/index.php?id=" . $user->id;
+                } else {
+                    $responseuri = "/user/profile.php?id=" . $user->id;
+                }
             }
         }
 
@@ -276,7 +282,10 @@ class helper {
                 '/course/edit.php',
                 '/course/index.php',
             ],
-            'customcleanurl_userurl' => '/user/profile.php',
+            'customcleanurl_userurl' => [
+                '/user/profile.php',
+                '/local/smartprofile/index.php',
+            ],
         ];
         foreach ($urltypes as $key => $item) {
             if (is_array($item)) {

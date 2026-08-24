@@ -172,8 +172,8 @@ class clean_url {
 
         // For cleanurl_type = userurl.
         if (in_array('userurl', $cleanurltype)) {
-            // Url path start with /course.
-            if (preg_match('#^' . $CFG->subdirpath . '/user/profile.php#', $this->path, $matches)) {
+            // Url path start with /user/profile.php or /local/smartprofile/index.php.
+            if (preg_match('#^' . $CFG->subdirpath . '(/user/profile\.php|/local/smartprofile/index\.php)#', $this->path, $matches)) {
                 $this->clean_users_profile_url();
                 return;
             }
@@ -273,8 +273,7 @@ class clean_url {
         $user = $DB->get_record('user', ['id' => $this->params['id']]);
         if ($user) {
             unset($this->params['id']);
-            $cleannewpath = $this->remove_index_php();
-            $cleannewpath = $cleannewpath . '/' . urlencode(strtolower($user->username));
+            $cleannewpath = '/user/profile/' . urlencode(strtolower($user->username));
             if ($this->check_path_allowed($cleannewpath)) {
                 $this->path = $cleannewpath;
             }
