@@ -43,9 +43,9 @@ $id = optional_param('id', 0, PARAM_INT);
 $action = optional_param('action', '', PARAM_TEXT);
 $context = \context_system::instance();
 
-// Only site admins (or anyone with moodle/site:config) may manage custom urls.
+// Only users with the plugin capability may manage custom urls.
 require_login(null, false);
-if (!has_capability('moodle/site:config', $context)) {
+if (!has_capability('local/customcleanurl:managecustomcleanurl', $context)) {
     throw new moodle_exception('invalidaccess', 'local_customcleanurl');
 }
 // Admin external page setup.
@@ -64,7 +64,6 @@ $pagepath = '/local/customcleanurl/define_custom_url.php';
 $pageurl = new moodle_url($pagepath);
 $pagetitle = get_string('define_custom_url', 'local_customcleanurl');
 
-// Setup page information.
 $PAGE->set_context($context);
 $PAGE->set_url($pageurl);
 $PAGE->set_pagelayout('admin');

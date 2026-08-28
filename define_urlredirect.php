@@ -39,7 +39,7 @@ $context = \context_system::instance();
 
 // Access checks and Capability check.
 require_login(null, false);
-if (!has_capability('moodle/site:config', $context)) {
+if (!has_capability('local/customcleanurl:manageurlredirect', $context)) {
     throw new moodle_exception('invalidaccess', 'local_customcleanurl');
 }
 $enableurlredirect = get_config('local_customcleanurl', 'enable_urlredirect');

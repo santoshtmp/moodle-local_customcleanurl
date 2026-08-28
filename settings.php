@@ -152,7 +152,8 @@ if ($hassiteconfig) {
                 new admin_externalpage(
                     'local_customcleanurl_defineurl',
                     get_string('define_custom_url', $componentname),
-                    new moodle_url('/local/customcleanurl/define_custom_url.php')
+                    new moodle_url('/local/customcleanurl/define_custom_url.php'),
+                    'local/customcleanurl:managecustomcleanurl'
                 )
             );
         }
@@ -165,7 +166,8 @@ if ($hassiteconfig) {
                 new admin_externalpage(
                     'local_customcleanurl_urlredirect',
                     get_string('define_urlredirect', $componentname),
-                    new moodle_url('/local/customcleanurl/define_urlredirect.php')
+                    new moodle_url('/local/customcleanurl/define_urlredirect.php'),
+                    'local/customcleanurl:manageurlredirect'
                 )
             );
         }

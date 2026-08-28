@@ -384,6 +384,10 @@ class helper {
             return;
         }
 
+        if (!has_capability('local/customcleanurl:managecustomcleanurl', $PAGE->context)) {
+            return;
+        }
+
         // Prevent duplicate.
         if ($secondaryview->find('local_customcleanurl', null)) {
             return;

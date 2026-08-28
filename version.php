@@ -31,10 +31,10 @@ defined('MOODLE_INTERNAL') || die();
 $plugin->component = 'local_customcleanurl';
 
 // This is the named version.
-$plugin->release = '1.1.6';
+$plugin->release = '1.1.7';
 
 // This is the version of the plugin.
-$plugin->version = 2026091500;
+$plugin->version = 2026092800;
 
 // This is a stable release.
 $plugin->maturity = MATURITY_STABLE;

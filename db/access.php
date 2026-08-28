@@ -26,8 +26,16 @@
 defined('MOODLE_INTERNAL') || die();
 
 $capabilities = [
-    // Capability to manage custom clean url.
+    // Capability to manage custom URL mappings.
     'local/customcleanurl:managecustomcleanurl' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
+    ],
+    // Capability to manage URL redirects.
+    'local/customcleanurl:manageurlredirect' => [
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => [

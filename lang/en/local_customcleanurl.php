@@ -112,3 +112,6 @@ $string['something_went_wrong'] = 'Something went wrong.';
 $string['data_delete'] = 'Custom Clean URL data successfully deleted.';
 $string['data_delete_missing'] = 'Custom Clean URL delete data is missing.';
 $string['data_edit_missing'] = 'Custom Clean URL edit data is missing.';
+
+$string['customcleanurl:managecustomcleanurl'] = 'Manage custom clean URLs';
+$string['customcleanurl:manageurlredirect'] = 'Manage URL redirects';
