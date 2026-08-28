@@ -24,6 +24,7 @@
  *
  */
 
+// phpcs:ignoreFile moodle.Files.LangFilesOrdering.IncorrectOrder
 defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'Custom Clean URL';

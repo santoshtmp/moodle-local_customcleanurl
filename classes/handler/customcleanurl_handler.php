@@ -317,7 +317,7 @@ class customcleanurl_handler {
             ]);
             $filterform .= html_writer::end_div();
 
-            $filterform .= html_writer::end_div(); 
+            $filterform .= html_writer::end_div();
             // ... end div.row
 
             // Buttons on their own row below the fields.

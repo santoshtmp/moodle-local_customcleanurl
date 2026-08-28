@@ -156,7 +156,6 @@ class clean_url {
                 ],
             );
             if ($checkcustomurlpath) {
-                // ... $this->path = $checkcustomurlpath->custom_url;
                 $this->path = implode(
                     '/',
                     array_map(

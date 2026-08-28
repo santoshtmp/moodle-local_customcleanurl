@@ -94,7 +94,6 @@ class customcleanurl_form extends \moodleform {
         $mform->addElement('hidden', 'returnurl');
         $mform->setType('returnurl', PARAM_URL);
         $mform->setDefault('returnurl', '');
-
     }
 
     /**

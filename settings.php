@@ -145,7 +145,7 @@ if ($hassiteconfig) {
     $ADMIN->add($componentname, $settings);
 
     if ($category != 'local_customcleanurl') {
-        // "Define Custom URL" sub-page — only listed when that clean-url type is enabled.
+        // ... "Define Custom URL" sub-page — only listed when that clean-url type is enabled.
         if ($isenablecustomcleanurl && in_array('defineurl', $cleanurloptions)) {
             $ADMIN->add(
                 $componentname,
@@ -158,7 +158,7 @@ if ($hassiteconfig) {
             );
         }
 
-        // "Define URL Redirect" sub-page — only listed when url redirect is enabled.
+        // ... "Define URL Redirect" sub-page — only listed when url redirect is enabled.
         $enableurlredirect = get_config($componentname, 'enable_urlredirect');
         if ($enableurlredirect) {
             $ADMIN->add(
@@ -172,5 +172,4 @@ if ($hassiteconfig) {
             );
         }
     }
-
 }
