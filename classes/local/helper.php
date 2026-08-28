@@ -156,7 +156,7 @@ class helper {
                 ],
             );
             if (!$checkcustomurlpath) {
-                $decoderequestpath =  implode(
+                $decoderequestpath = implode(
                     '/',
                     array_map(
                         'rawurldecode',

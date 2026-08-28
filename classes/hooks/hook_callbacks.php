@@ -83,5 +83,4 @@ class hook_callbacks {
     public static function extend_secondary_navigation(\core\hook\navigation\secondary_extend $hook): void {
         helper::add_define_custom_url_node($hook->get_secondaryview());
     }
-
 }

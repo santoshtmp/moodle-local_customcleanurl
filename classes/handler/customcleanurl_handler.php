@@ -265,7 +265,6 @@ class customcleanurl_handler {
         $table->setup();
 
         if ($cleanurltype == 'defineurl') {
-
             // Build the filter form.
             $filterform = html_writer::start_tag('form', [
                 'method' => 'get',
@@ -318,7 +317,8 @@ class customcleanurl_handler {
             ]);
             $filterform .= html_writer::end_div();
 
-            $filterform .= html_writer::end_div(); // end .row
+            $filterform .= html_writer::end_div(); 
+            // ... end div.row
 
             // Buttons on their own row below the fields.
             $filterform .= html_writer::start_div('row mt-2');
