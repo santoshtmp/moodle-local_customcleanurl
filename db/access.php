@@ -15,32 +15,31 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version information for customcleanurl.
+ * Capabilities for local_customcleanurl plugin.
  *
  * @package    local_customcleanurl
- * @copyright  2025 santoshtmp <https://santoshmagar.com.np/>
- * @author     santoshtmp
+ * @copyright  2026 https://santoshmagar.com.np/
+ * @author     santoshmagar.com.np
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
  */
 
-// This line protects the file from being accessed by a URL directly.
 defined('MOODLE_INTERNAL') || die();
 
-// This is the component name of the plugin.
-$plugin->component = 'local_customcleanurl';
-
-// This is the named version.
-$plugin->release = '1.1.7';
-
-// This is the version of the plugin.
-$plugin->version = 2026092800;
-
-// This is a stable release.
-$plugin->maturity = MATURITY_STABLE;
-
-// This is the version of Moodle this plugin requires.
-$plugin->requires = 2024100100;
-
-// This is the release of Moodle this plugin requires.
-$plugin->supported = [405, 502];
+$capabilities = [
+    // Capability to manage custom URL mappings.
+    'local/customcleanurl:managecustomcleanurl' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
+    ],
+    // Capability to manage URL redirects.
+    'local/customcleanurl:manageurlredirect' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
+    ],
+];

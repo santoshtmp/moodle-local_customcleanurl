@@ -1,5 +1,10 @@
 ## Release notes
 
+### Version 1.1.7 (2026092800)
+* Add a Define Custom URL link to secondary navigation
+* Add capability checks for managing custom URLs and URL redirects
+* Update CI configuration and clean up code formatting
+
 ### Version 1.1.6 (2026091500)
 * Fix Moodle topic collapse buttons
 

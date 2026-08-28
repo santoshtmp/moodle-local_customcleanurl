@@ -39,7 +39,7 @@ $context = \context_system::instance();
 
 // Access checks and Capability check.
 require_login(null, false);
-if (!has_capability('moodle/site:config', $context)) {
+if (!has_capability('local/customcleanurl:manageurlredirect', $context)) {
     throw new moodle_exception('invalidaccess', 'local_customcleanurl');
 }
 $enableurlredirect = get_config('local_customcleanurl', 'enable_urlredirect');
@@ -59,6 +59,7 @@ $PAGE->set_pagelayout('admin');
 $PAGE->set_pagetype('define_urlredirect');
 $PAGE->set_title($pagetitle);
 $PAGE->set_heading($pagetitle);
+$PAGE->navbar->add(get_string('pluginname', 'local_customcleanurl'), '/admin/category.php?category=local_customcleanurl');
 $PAGE->navbar->add($pagetitle);
 $PAGE->set_blocks_editing_capability('moodle/site:manageblocks');
 $PAGE->requires->jquery();

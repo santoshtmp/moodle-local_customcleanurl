@@ -90,6 +90,10 @@ class customcleanurl_form extends \moodleform {
         $mform->addElement('hidden', 'type');
         $mform->setType('type', PARAM_TEXT);
         $mform->setDefault('type', $type);
+
+        $mform->addElement('hidden', 'returnurl');
+        $mform->setType('returnurl', PARAM_URL);
+        $mform->setDefault('returnurl', '');
     }
 
     /**
@@ -172,13 +176,17 @@ class customcleanurl_form extends \moodleform {
                     $errors['custom_url'] = get_string('error_default_url_alrady_clean', 'local_customcleanurl', $a);
                 } else {
                     $customurl = str_replace($CFG->wwwroot, '', trim($data['custom_url']));
-                    $existing = $DB->get_record($dbtable, [
-                        'custom_url' => $customurl,
-                        'cleanurl_type' => 'defineurl',
-                    ]);
-                    if ($existing) {
-                        if (!$data['id'] || $existing->id != $data['id']) {
-                            $errors['custom_url'] = get_string('error_custom_exist', 'local_customcleanurl', $a);
+                    if (strlen($customurl) >= 225) {
+                        $errors['custom_url'] = get_string('error_url_too_long', 'local_customcleanurl');
+                    } else {
+                        $existing = $DB->get_record($dbtable, [
+                            'custom_url' => $customurl,
+                            'cleanurl_type' => 'defineurl',
+                        ]);
+                        if ($existing) {
+                            if (!$data['id'] || $existing->id != $data['id']) {
+                                $errors['custom_url'] = get_string('error_custom_exist', 'local_customcleanurl', $a);
+                            }
                         }
                     }
                 }

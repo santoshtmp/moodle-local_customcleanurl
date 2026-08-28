@@ -39,4 +39,9 @@ $callbacks = [
         'callback' => [local_customcleanurl\hooks\hook_callbacks::class, 'after_config'],
         'priority' => 0,
     ],
+    [
+        'hook'     => \core\hook\navigation\secondary_extend::class,
+        'callback' => [\local_customcleanurl\hooks\hook_callbacks::class, 'extend_secondary_navigation'],
+        'priority' => 500,
+    ],
 ];

@@ -15,7 +15,12 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Setting file.
+ * Admin settings for local_customcleanurl.
+ *
+ * Registers a category node under "Local plugins" in the admin tree, containing:
+ * - A "General settings" page (admin_settingpage) with the plugin's config options.
+ * - A "Define Custom URL" external page, shown only when that clean-url type is enabled.
+ * - A "Define URL Redirect" external page, shown only when url redirect is enabled.
  *
  * @package    local_customcleanurl
  * @copyright  2025 https://santoshmagar.com.np/
@@ -31,33 +36,53 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/adminlib.php');
 
+$componentname = 'local_customcleanurl';
+
 if ($hassiteconfig) {
     $checkrewritehtaccess = '';
     $isenablecustomcleanurl = helper::is_enable_customcleanurl();
+    $cleanurloptions = get_config($componentname, 'cleanurl_type');
+    $cleanurloptions = $cleanurloptions ? explode(",", $cleanurloptions) : [];
     $customcleanurlroutecheck = false;
 
-    // ... Heading.
-    $settings = new admin_settingpage('local_customcleanurl', get_string('pluginname', 'local_customcleanurl'));
-    $ADMIN->add('localplugins', $settings);
+    // Current admin tree section/category, used below to show the route-check
+    // notice only when the user is actually viewing this plugin's settings.
+    $section = optional_param('section', '', PARAM_TEXT);
+    $category = optional_param('category', '', PARAM_TEXT);
 
-    // ... Enable custom clean url
-    $name = 'local_customcleanurl/enable_customcleanurl';
-    $title = get_string('enable_customcleanurl', 'local_customcleanurl');
+    // Category node: groups all of this plugin's admin pages together under
+    // "Local plugins", instead of a single flat settings page.
+    $ADMIN->add('localplugins', new admin_category(
+        $componentname,
+        get_string('pluginname', $componentname)
+    ));
+
+    // Main "General settings" page, added into the category above.
+    $settings = new admin_settingpage(
+        'local_customcleanurl_settings',
+        get_string('generalsettings', $componentname)
+    );
+
+    // Enable/disable the whole custom clean url feature.
+    $name = $componentname . '/enable_customcleanurl';
+    $title = get_string('enable_customcleanurl', $componentname);
     $description = '';
     if ($isenablecustomcleanurl) {
-        $section = optional_param('section', '', PARAM_TEXT);
-        if ($section == 'local_customcleanurl') {
+        // Only run the htaccess/route check when this plugin's own admin
+        // page (settings page or category overview) is being displayed,
+        // to avoid the extra check firing on unrelated admin pages.
+        if ($section == 'local_customcleanurl_settings' || $category == $componentname) {
             $customcleanurlroutecheck = helper::customcleanurl_routecheck();
             if ($customcleanurlroutecheck) {
                 $description .= html_writer::tag(
                     'div',
-                    get_string('pass_customcleanurlroutecheck', 'local_customcleanurl'),
+                    get_string('pass_customcleanurlroutecheck', $componentname),
                     ["class" => "alert alert-info alert-block fade in  alert-dismissible"]
                 );
             } else {
                 $description .= html_writer::tag(
                     'div',
-                    get_string('fail_customcleanurlroutecheck', 'local_customcleanurl'),
+                    get_string('fail_customcleanurlroutecheck', $componentname),
                     ["class" => "alert alert-danger alert-block fade in  alert-dismissible"]
                 );
                 $description .= html_writer::tag(
@@ -71,51 +96,80 @@ if ($hassiteconfig) {
     $setting = new admin_setting_configcheckbox($name, $title, $description, 0);
     $settings->add($setting);
 
-    // ... Enable url redirect
-    $name = 'local_customcleanurl/enable_urlredirect';
-    $title = get_string('enable_urlredirect', 'local_customcleanurl');
-    $description = get_string('enable_urlredirect_desc', 'local_customcleanurl');
-    $enableurlredirect = get_config('local_customcleanurl', 'enable_urlredirect');
+    // Enable/disable the url redirect feature.
+    $name = $componentname . '/enable_urlredirect';
+    $title = get_string('enable_urlredirect', $componentname);
+    $description = get_string('enable_urlredirect_desc', $componentname);
+    $enableurlredirect = get_config($componentname, 'enable_urlredirect');
     if ($enableurlredirect) {
         $a = new stdClass();
         $a->url = (new moodle_url('/local/customcleanurl/define_urlredirect.php'))->out(false);
-        $description .= get_string('enable_urlredirect_descwithlink', 'local_customcleanurl', $a);
+        $description .= get_string('enable_urlredirect_descwithlink', $componentname, $a);
     }
     $setting = new admin_setting_configcheckbox($name, $title, $description, 0);
     $settings->add($setting);
 
-    // ... after enable enable_customcleanurl, check route.
+    // Remaining settings only make sense once custom clean url is enabled.
     if ($isenablecustomcleanurl) {
-        // ... define custom url type.
+        // Which type(s) of clean url are active: course, user, and/or defined custom url.
         $checkboxoptions  = [
-            'courseurl' => get_string('course_url', 'local_customcleanurl'),
-            'userurl' => get_string('user_url', 'local_customcleanurl'),
-            'defineurl' => get_string('define_custom_url', 'local_customcleanurl'),
+            'courseurl' => get_string('course_url', $componentname),
+            'userurl' => get_string('user_url', $componentname),
+            'defineurl' => get_string('define_custom_url', $componentname),
         ];
         $defaultvalues = [
             'courseurl' => 0,
             'userurl' => 0,
             'defineurl' => 1,
         ];
-        $name = 'local_customcleanurl/cleanurl_type';
-        $title = get_string('clean_url_type', 'local_customcleanurl');
-        $description = get_string('cleanurl_options_desc', 'local_customcleanurl');
-        // ... define custom url link
-        $cleanurloptions = get_config('local_customcleanurl', 'cleanurl_type');
-        $cleanurloptions = explode(",", $cleanurloptions);
+        $name = $componentname . '/cleanurl_type';
+        $title = get_string('clean_url_type', $componentname);
+        $description = get_string('cleanurl_options_desc', $componentname);
         if (in_array('defineurl', $cleanurloptions)) {
             $a = new stdClass();
             $a->url = (new moodle_url('/local/customcleanurl/define_custom_url.php'))->out(false);
-            $description .= get_string('define_custom_urldesc', 'local_customcleanurl', $a);
+            $description .= get_string('define_custom_urldesc', $componentname, $a);
         }
         $setting = new admin_setting_configmulticheckbox($name, $title, $description, $defaultvalues, $checkboxoptions);
         $settings->add($setting);
 
-        // ... 404 error page content
-        $name = 'local_customcleanurl/error404_content';
-        $title = get_string('error404_content', 'local_customcleanurl');
-        $description = get_string('error404_content_desc', 'local_customcleanurl');
+        // Custom content shown on the plugin's 404 error page.
+        $name = $componentname . '/error404_content';
+        $title = get_string('error404_content', $componentname);
+        $description = get_string('error404_content_desc', $componentname);
         $setting = new admin_setting_confightmleditor($name, $title, $description, '');
         $settings->add($setting);
+    }
+
+    // Register the general settings page under the category.
+    $ADMIN->add($componentname, $settings);
+
+    if ($category != 'local_customcleanurl') {
+        // ... "Define Custom URL" sub-page — only listed when that clean-url type is enabled.
+        if ($isenablecustomcleanurl && in_array('defineurl', $cleanurloptions)) {
+            $ADMIN->add(
+                $componentname,
+                new admin_externalpage(
+                    'local_customcleanurl_defineurl',
+                    get_string('define_custom_url', $componentname),
+                    new moodle_url('/local/customcleanurl/define_custom_url.php'),
+                    'local/customcleanurl:managecustomcleanurl'
+                )
+            );
+        }
+
+        // ... "Define URL Redirect" sub-page — only listed when url redirect is enabled.
+        $enableurlredirect = get_config($componentname, 'enable_urlredirect');
+        if ($enableurlredirect) {
+            $ADMIN->add(
+                $componentname,
+                new admin_externalpage(
+                    'local_customcleanurl_urlredirect',
+                    get_string('define_urlredirect', $componentname),
+                    new moodle_url('/local/customcleanurl/define_urlredirect.php'),
+                    'local/customcleanurl:manageurlredirect'
+                )
+            );
+        }
     }
 }

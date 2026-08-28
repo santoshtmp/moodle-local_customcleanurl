@@ -25,9 +25,8 @@
 
 use local_customcleanurl\local\helper;
 
-define('NO_MOODLE_COOKIES', true);
-
 // Get require config file.
+// phpcs:ignore moodle.Files.RequireLogin.Missing -- This endpoint is intentionally public.
 require_once(dirname(__FILE__) . '/../../config.php');
 
 // Prepare the page information.
