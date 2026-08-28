@@ -59,6 +59,7 @@ $PAGE->set_pagelayout('admin');
 $PAGE->set_pagetype('define_urlredirect');
 $PAGE->set_title($pagetitle);
 $PAGE->set_heading($pagetitle);
+$PAGE->navbar->add(get_string('pluginname', 'local_customcleanurl'), '/admin/category.php?category=local_customcleanurl');
 $PAGE->navbar->add($pagetitle);
 $PAGE->set_blocks_editing_capability('moodle/site:manageblocks');
 $PAGE->requires->jquery();

@@ -15,6 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Admin page for defining custom clean urls.
+ *
+ * Lets a site admin map default Moodle urls to custom clean urls: shows an
+ * add/edit form plus a paginated, sortable, and filterable list of existing
+ * mappings, and handles add/edit/delete actions for local_customcleanurl.
  *
  * @package    local_customcleanurl
  * @copyright  2025 https://santoshmagar.com.np/
@@ -28,28 +33,33 @@ use core\output\html_writer;
 use local_customcleanurl\handler\customcleanurl_handler;
 use local_customcleanurl\local\helper;
 
-// Get require config file.
+// Bootstrap Moodle - Get require config file.
 require_once(dirname(__FILE__) . '/../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
 defined('MOODLE_INTERNAL') || die();
 
-// Get parameter.
+// Get request parameters.
 $id = optional_param('id', 0, PARAM_INT);
 $action = optional_param('action', '', PARAM_TEXT);
 $context = \context_system::instance();
 
-// Access checks and Capability check.
+// Only site admins (or anyone with moodle/site:config) may manage custom urls.
 require_login(null, false);
 if (!has_capability('moodle/site:config', $context)) {
     throw new moodle_exception('invalidaccess', 'local_customcleanurl');
 }
+// Admin external page setup.
+admin_externalpage_setup('local_customcleanurl_defineurl');
+
+// This page is only usable when the "define custom url" clean-url type is
+// enabled, on top of the overall custom clean url feature being enabled.
 $cleanurloptions = get_config('local_customcleanurl', 'cleanurl_type');
 $cleanurloptions = explode(",", $cleanurloptions);
 if (!(in_array('defineurl', $cleanurloptions) && helper::is_enable_customcleanurl())) {
     throw new moodle_exception('featureisnotenable', 'local_customcleanurl');
 }
 
-// Prepare the page information.
+// Page setup - Prepare the page information.
 $pagepath = '/local/customcleanurl/define_custom_url.php';
 $pageurl = new moodle_url($pagepath);
 $pagetitle = get_string('define_custom_url', 'local_customcleanurl');
@@ -61,36 +71,45 @@ $PAGE->set_pagelayout('admin');
 $PAGE->set_pagetype('define_custom_url');
 $PAGE->set_title($pagetitle);
 $PAGE->set_heading($pagetitle);
+$PAGE->navbar->add(get_string('pluginname', 'local_customcleanurl'), '/admin/category.php?category=local_customcleanurl');
 $PAGE->navbar->add($pagetitle);
 $PAGE->set_blocks_editing_capability('moodle/site:manageblocks');
 $PAGE->requires->jquery();
 
-// FORM actions.
+// Build the add/edit form (shared for both add and edit via the moodleform's
+// internal state; 'type' => 'defineurl' tells it which clean-url type it's for).
 $definecustomurlform = new \local_customcleanurl\form\customcleanurl_form(null, ['type' => 'defineurl']);
 
 if ($definecustomurlform->is_cancelled()) {
-    redirect($pageurl);
+    // User cancelled the form: go back to a clean listing page.
+    $returnurl = optional_param('returnurl', '', PARAM_URL);
+    redirect($returnurl ? $returnurl : $pageurl);
 } else if ($formdata = $definecustomurlform->get_data()) {
+    // Valid submission: persist the mapping (handles both add and edit internally).
     customcleanurl_handler::save_data($formdata, $pageurl, 'defineurl');
 } else {
-    if ($action && $id) {
-        // Verify sesskey.
+    if ($action) {
+        // Any GET action (edit/delete) must carry a valid sesskey.
         $sesskey = required_param('sesskey', PARAM_ALPHANUM);
         if ($sesskey != sesskey()) {
             redirect($pageurl, get_string('invalidsesskey', 'local_customcleanurl'));
         }
-        // For Delete.
-        if ($action == 'delete') {
+        // Delete an existing mapping.
+        if ($action == 'delete' && $id) {
             customcleanurl_handler::delete_data($id, $pageurl);
         }
-        // For Edit.
-        if ($action == 'edit') {
+        // Load an existing mapping into the form for editing.
+        if ($action == 'edit' && $id) {
             customcleanurl_handler::edit_form($definecustomurlform, $id, $pageurl);
+        }
+        // Prepare the form for adding a new mapping.
+        if ($action == 'edit' && !$id) {
+            customcleanurl_handler::add_form($definecustomurlform);
         }
     }
 }
 
-// Get the data and display.
+// Build the page content: the add/edit form followed by the list of mappings.
 $contents = '';
 $contents .= html_writer::start_tag('div', ['class' => 'add-custom-url-wrapper mt-4 mb-4']);
 $contents .= html_writer::tag('h3', get_string('add_new_url', 'local_customcleanurl'));
@@ -101,7 +120,7 @@ $contents .= html_writer::tag('h3', get_string('list_custom_url', 'local_customc
 $contents .= customcleanurl_handler::get_custom_url_data_table($pagepath, 50, 'defineurl');
 $contents .= html_writer::end_tag('div');
 
-// Output Content.
+// Render the page.
 echo $OUTPUT->header();
 echo $contents;
 echo $OUTPUT->footer();

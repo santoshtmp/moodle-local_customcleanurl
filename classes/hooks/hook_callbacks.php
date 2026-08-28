@@ -15,6 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Hook callbacks for local_customcleanurl.
  *
  * @package    local_customcleanurl
  * @copyright  2025 https://santoshmagar.com.np/
@@ -26,42 +27,61 @@
 namespace local_customcleanurl\hooks;
 
 use core\hook\output\before_http_headers;
+use local_customcleanurl\local\helper;
 
 /**
- * Hook callbacks for local_customcleanurl
+ * Hook callbacks for local_customcleanurl.
  *
  * @package    local_customcleanurl
- * @copyright  2025 santoshtmp <https://santoshmagar.com.np/>
+ * @copyright  2025 https://santoshmagar.com.np/
  * @author     santoshtmp
- * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class hook_callbacks {
     /**
-     * Callback allowing to before_http_headers
+     * Callback for before_http_headers.
      *
-     * @param \core\hook\output\before_http_headers $hook
+     * @param before_http_headers $hook
      */
     public static function before_http_headers(before_http_headers $hook): void {
-        global $CFG;
+        global $CFG, $PAGE;
+
         if (during_initial_install() || isset($CFG->upgraderunning)) {
             // Do nothing during installation or upgrade.
             return;
         }
-        if (class_exists("\local_customcleanurl\local\helper")) {
-            \local_customcleanurl\local\helper::urlrewriteclass_initialize();
+
+        if (class_exists(\local_customcleanurl\local\helper::class)) {
+            helper::urlrewriteclass_initialize();
         }
-        \local_customcleanurl\local\helper::urlredirect_initialize();
+        helper::urlredirect_initialize();
+
+        helper::add_define_custom_url_node($PAGE->secondarynav);
     }
 
-
     /**
-     * Callback allowing to add contetnt inside the region-main, in the very end
+     * Callback for after_config.
+     *
+     * Ensures the custom URL rewrite class is initialised after config is loaded.
      *
      * @param \core\hook\after_config $hook
      */
     public static function after_config(\core\hook\after_config $hook): void {
-        if (class_exists("\local_customcleanurl\local\helper")) {
-            \local_customcleanurl\local\helper::urlrewriteclass_initialize();
+        if (class_exists(\local_customcleanurl\local\helper::class)) {
+            helper::urlrewriteclass_initialize();
         }
     }
+
+    /**
+     * Callback for secondary_extend.
+     *
+     * Adds the "Define custom URL" node on pages that build secondary
+     * navigation through core (course, module, category, site admin, etc.).
+     *
+     * @param \core\hook\navigation\secondary_extend $hook
+     */
+    public static function extend_secondary_navigation(\core\hook\navigation\secondary_extend $hook): void {
+        helper::add_define_custom_url_node($hook->get_secondaryview());
+    }
+
 }

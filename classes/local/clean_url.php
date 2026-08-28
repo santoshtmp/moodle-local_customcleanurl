@@ -156,8 +156,17 @@ class clean_url {
                 ],
             );
             if ($checkcustomurlpath) {
-                $this->path = $checkcustomurlpath->custom_url;
+                // $this->path = $checkcustomurlpath->custom_url;
+                $this->path = implode(
+                    '/',
+                    array_map(
+                        'rawurlencode',
+                        explode('/', $checkcustomurlpath->custom_url)
+                    )
+                );
+
                 $this->params = [];
+                return;
             }
         }
 
@@ -222,7 +231,7 @@ class clean_url {
             $course = $DB->get_record('course', ['id' => $courseid]);
             if ($course) {
                 unset($this->params['id']);
-                $cleannewpath = $cleannewpath . '/' . urlencode(strtolower($course->shortname));
+                $cleannewpath = $cleannewpath . '/' . rawurlencode(strtolower($course->shortname));
                 if ($this->check_path_allowed($cleannewpath)) {
                     $this->path = $cleannewpath;
                 }
@@ -232,7 +241,7 @@ class clean_url {
             if ($coursecategories) {
                 unset($this->params['categoryid']);
                 $cleannewpath = $cleannewpath . '/category/' . $coursecategories->id .
-                    '/' . urlencode(strtolower($coursecategories->name));
+                    '/' . rawurlencode(strtolower($coursecategories->name));
                 if ($this->check_path_allowed($cleannewpath)) {
                     $this->path = $cleannewpath;
                 }
@@ -268,7 +277,7 @@ class clean_url {
         if ($user) {
             unset($this->params['id']);
             $cleannewpath = $this->remove_index_php();
-            $cleannewpath = $cleannewpath . '/' . urlencode(strtolower($user->username));
+            $cleannewpath = $cleannewpath . '/' . rawurlencode(strtolower($user->username));
             if ($this->check_path_allowed($cleannewpath)) {
                 $this->path = $cleannewpath;
             }

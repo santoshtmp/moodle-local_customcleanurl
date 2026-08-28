@@ -73,15 +73,16 @@ This will change the default moodle url to clean url.
 </ol>
 ';
 
+$string['generalsettings'] = 'General settings';
 $string['define_urlredirect'] = 'Define URL Redirect';
 $string['enable_urlredirect'] = 'Enable url redirect';
 $string['enable_urlredirect_desc'] = 'URLs are redirected to the next destination URL.';
-$string['enable_urlredirect_descwithlink'] = ' <br> Now you can define url redirect for the existing moodle url at <a href="{$a->url}" target="_blank">HERE - URL Redirect</a>.';
+$string['enable_urlredirect_descwithlink'] = ' <br> Now you can define url redirect for the existing moodle url at <a href="{$a->url}" target="_blank" class="btn btn-primary">HERE - URL Redirect</a>.';
 $string['list_custom_urlredirect'] = 'List of custom url redirect';
 $string['add_new_url_redirect'] = 'Add new url redirect';
 $string['destination_url'] = 'Destination URL';
 $string['clean_url_type'] = 'Custom Clean URL Type';
-$string['define_custom_urldesc'] = 'Now you can define custom url for the existing moodle url at <a href="{$a->url}" target="_blank" >HERE - Define Custom URL</a>.';
+$string['define_custom_urldesc'] = 'Now you can define custom url for the existing moodle url at <a href="{$a->url}" target="_blank" class="btn btn-primary">HERE - Define Custom URL</a>';
 $string['error404_content'] = '404 Page Content';
 $string['error404_content_desc'] = 'Content which is shown in 404 error Page.';
 
@@ -101,12 +102,13 @@ $string['error_custom_url_path'] = 'Provided path "{$a->custom_url}" must start 
 $string['error_custom_exist'] = 'Provided URL "{$a->custom_url}" alrady taken.';
 $string['error_custom_url_not_originalurl'] = 'Provided URL "{$a->custom_url}" is not the default original URL.';
 $string['error_customurlparam'] = 'Custom Clean url cannot have parameter.';
+$string['error_url_too_long'] = 'URL is too long.';
 
 $string['edit_custom_url_title'] = 'Edit custom url';
-$string['data_saved'] = 'Data is sucesfully saved.';
-$string['data_updated'] = 'Data is sucesfully updated.';
+$string['data_saved'] = 'Custom Clean URL data is sucesfully saved.';
+$string['data_updated'] = 'Custom Clean URL data is sucesfully updated.';
 $string['data_saved_error'] = 'Data error on save.';
 $string['something_went_wrong'] = 'Something went wrong.';
-$string['data_delete'] = 'successfully deleted.';
-$string['data_delete_missing'] = 'Delete data is missing.';
-$string['data_edit_missing'] = 'Edit data is missing.';
+$string['data_delete'] = 'Custom Clean URL data successfully deleted.';
+$string['data_delete_missing'] = 'Custom Clean URL delete data is missing.';
+$string['data_edit_missing'] = 'Custom Clean URL edit data is missing.';

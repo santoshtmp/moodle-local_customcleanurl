@@ -118,10 +118,6 @@ class helper {
      */
     public static function check_requesturl($requesturl) {
         global $CFG, $DB;
-        $subdirpath = (new \moodle_url($CFG->wwwroot))->get_path(false);
-        $requestmoodleurl = new moodle_url(rtrim($requesturl, "/"));
-        $requestpath = $requestmoodleurl->get_path(false);
-        $requestpath = urldecode(str_replace($subdirpath, '', $requestpath));
 
         $responsedata = [
             'status' => true,
@@ -132,20 +128,25 @@ class helper {
             'urltype' => '',
         ];
 
+        // Bail out early if the feature is disabled site-wide.
         if (!self::is_enable_customcleanurl()) {
             $responsedata['status'] = false;
             $responsedata['message'] = get_string('featureisnotenable', 'local_customcleanurl');
             return $responsedata;
         }
 
-        $parts = explode("/", trim($requestpath, '/'));
-        $uniquename = urldecode(end($parts));
         $responseuri = '';
 
         $cleanurltype = get_config('local_customcleanurl', 'cleanurl_type');
         $cleanurltype = explode(",", $cleanurltype);
 
-        // Case 1: Admin-defined custom mapping (defineurl).
+        $subdirpath = (new \moodle_url($CFG->wwwroot))->get_path(false);
+        $requestmoodleurl = new moodle_url(rtrim($requesturl, "/"));
+        $requestpath = $requestmoodleurl->get_path(false);
+        $requestpath = str_replace($subdirpath, '', $requestpath);
+
+        // Case 1: Admin-defined custom mapping (defineurl) — highest priority,
+        // checked first so an explicit mapping always wins over pattern matching.
         if (in_array('defineurl', $cleanurltype)) {
             $checkcustomurlpath = $DB->get_record(
                 'local_customcleanurl',
@@ -154,29 +155,60 @@ class helper {
                     'cleanurl_type' => 'defineurl',
                 ],
             );
+            if (!$checkcustomurlpath) {
+                $decoderequestpath =  implode(
+                    '/',
+                    array_map(
+                        'rawurldecode',
+                        explode('/', $requestpath)
+                    )
+                );
+                $checkcustomurlpath = $DB->get_record(
+                    'local_customcleanurl',
+                    [
+                        'custom_url' => $decoderequestpath,
+                        'cleanurl_type' => 'defineurl',
+                    ],
+                );
+            }
+
             if ($checkcustomurlpath) {
                 $responseuri = $checkcustomurlpath->default_url;
             }
         }
 
-        // Case 2: Course-related URLs (courseurl).
-        if (in_array('courseurl', $cleanurltype) && !$responseuri && $parts[0] === 'course') {
-            $course = $DB->get_record('course', ['shortname' => $uniquename]);
-            if ($course && count($parts) === 2) {
-                $responseuri = "/course/view.php?id=" . $course->id;
-            } else if ($course && count($parts) === 3 && $parts[1] === 'edit') {
-                $responseuri = "/course/edit.php?id=" . $course->id;
-            } else if (count($parts) === 4) {
-                $coursecategories = $DB->get_record('course_categories', ['id' => $parts[2]]);
-                $responseuri = "/course/index.php?categoryid=" . $coursecategories->id;
-            }
-        }
+        // Only fall through to pattern-based resolution if no explicit
+        // mapping was found above.
+        if (!$responseuri) {
+            $parts = explode("/", trim($requestpath, '/'));
+            $uniquename = rawurldecode(end($parts));
 
-        // Case 3: User profile URLs (userurl).
-        if (in_array('userurl', $cleanurltype) && !$responseuri && $parts[0] === 'user') {
-            $user = $DB->get_record('user', ['username' => $uniquename]);
-            if ($user && count($parts) === 3) {
-                $responseuri = "/user/profile.php?id=" . $user->id;
+            // Case 2: Course-related URLs (courseurl).
+            // Supported shapes: course/{shortname}, course/edit/{shortname},
+            // course/index/{categoryid}/{name}.
+            if (in_array('courseurl', $cleanurltype) && !$responseuri && $parts[0] === 'course') {
+                $course = $DB->get_record('course', ['shortname' => $uniquename]);
+                if ($course && count($parts) === 2) {
+                    $responseuri = "/course/view.php?id=" . $course->id;
+                } else if ($course && count($parts) === 3 && $parts[1] === 'edit') {
+                    $responseuri = "/course/edit.php?id=" . $course->id;
+                } else if (count($parts) === 4) {
+                    $coursecategories = $DB->get_record('course_categories', ['id' => $parts[2]]);
+                    // Guard against a missing category to avoid a warning
+                    // when dereferencing a false result.
+                    if ($coursecategories) {
+                        $responseuri = "/course/index.php?categoryid=" . $coursecategories->id;
+                    }
+                }
+            }
+
+            // Case 3: User profile URLs (userurl).
+            // Supported shape: user/{something}/{username}.
+            if (in_array('userurl', $cleanurltype) && !$responseuri && $parts[0] === 'user') {
+                $user = $DB->get_record('user', ['username' => $uniquename]);
+                if ($user && count($parts) === 3) {
+                    $responseuri = "/user/profile.php?id=" . $user->id;
+                }
             }
         }
 
@@ -185,6 +217,10 @@ class helper {
             $requestparam = $requestmoodleurl->params();
 
             $responseurl = new moodle_url($responseuri);
+
+            // Reject the match if any param on the resolved URL is also
+            // present on the incoming request — that's an ambiguous
+            // collision rather than a clean match.
             foreach ($responseurl->params() as $k => $v) {
                 if (array_key_exists($k, $requestparam)) {
                     $a = new stdClass();
@@ -195,10 +231,12 @@ class helper {
                     return $responsedata;
                 }
             }
+
             $rawresponsepath = $responseurl->get_path(false);
             $responsepath = str_starts_with($rawresponsepath, $subdirpath)
                 ? substr($rawresponsepath, strlen($subdirpath))
                 : $rawresponsepath;
+
             $responsedata['urltype'] = self::geturlpathtype($responsepath);
             $responsedata['filepath'] = $CFG->dirroot . $responsepath;
             $responsedata['param'] = $responseurl->params();
@@ -208,6 +246,7 @@ class helper {
         }
 
         // Directory as path - check for index files.
+        // Fallback 1: request path maps to a real directory.
         $dirpath = $CFG->dirroot . $requestpath;
         if (is_dir($dirpath)) {
             $files = scandir($dirpath);
@@ -222,7 +261,7 @@ class helper {
             }
         }
 
-        // Check if PHP file exists in the path.
+        // Fallback 2: request path already names a real PHP file on disk.
         if (str_contains($requestpath, '.php')) {
             $filepath = $CFG->dirroot . explode('.php', $requestpath)[0] . '.php';
             if (file_exists($filepath)) {
@@ -232,13 +271,13 @@ class helper {
             }
         }
 
-        // Handle customcleanurl route test endpoint.
+        // Fallback 3: built-in route test endpoint for verifying clean URLs work.
         if ($requestpath == '/customcleanurl/routetest') {
             $responsedata['urltype'] = 'customcleanurl_routetest';
             return $responsedata;
         }
 
-        // Return 404 if no matching path is found.
+        // Nothing matched — report a 404.
         $responsedata['urltype'] = '404';
         $responsedata['filepath'] = $CFG->dirroot . '/local/customcleanurl/404.php';
         return $responsedata;
@@ -327,5 +366,70 @@ class helper {
                 redirect(new moodle_url($checkcustomurlpath->custom_url));
             }
         }
+    }
+
+    /**
+     * Add the "Define custom URL" node to a secondary navigation tree.
+     *
+     * Shared entry point used by both secondary_extend and before_http_headers.
+     * Skips pages without secondary navigation, excluded layouts, and when the
+     * defineurl feature is disabled. Prevents duplicate nodes.
+     *
+     * @param \navigation_node $secondaryview Secondary navigation root node.
+     */
+    public static function add_define_custom_url_node(\navigation_node $secondaryview): void {
+        global $PAGE, $CFG;
+
+        if (!$PAGE->has_secondary_navigation()) {
+            return;
+        }
+
+        // Prevent duplicate.
+        if ($secondaryview->find('local_customcleanurl', null)) {
+            return;
+        }
+
+        $currentpagelayout = $PAGE->pagelayout;
+        if (in_array($currentpagelayout, ['frontpage', 'admin'], true)) {
+            return;
+        }
+
+        if ($currentpagelayout === 'coursecategory') {
+            $categoryid = optional_param('categoryid', 0, PARAM_INT);
+            if (empty($categoryid)) {
+                return;
+            }
+        }
+
+        $cleanurltype = get_config('local_customcleanurl', 'cleanurl_type');
+        $cleanurltype = explode(',', (string) $cleanurltype);
+
+        // Only when defineurl is enabled.
+        if (!in_array('defineurl', $cleanurltype, true)) {
+            return;
+        }
+
+        $pagerawurl = str_replace($CFG->wwwroot, '', $PAGE->url->raw_out(false));
+
+        $url = new \moodle_url('/local/customcleanurl/define_custom_url.php', [
+            'action'      => 'edit',
+            'sesskey'     => sesskey(),
+            'default_url' => $pagerawurl,
+            'returnurl'   => $pagerawurl,
+        ]);
+
+        $node = \navigation_node::create(
+            get_string('define_custom_url', 'local_customcleanurl'),
+            $url,
+            \navigation_node::TYPE_SETTING,
+            null,
+            'local_customcleanurl',
+            new \pix_icon('i/settings', '')
+        );
+
+        $node->showinsecondarynavigation = true;
+        $node->display = true;
+
+        $secondaryview->add_node($node);
     }
 }

@@ -25,8 +25,6 @@
 
 use local_customcleanurl\local\helper;
 
-define('NO_MOODLE_COOKIES', true);
-
 // Get require config file.
 require_once(dirname(__FILE__) . '/../../config.php');
 
