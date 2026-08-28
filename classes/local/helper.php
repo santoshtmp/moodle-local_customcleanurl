@@ -203,7 +203,7 @@ class helper {
             }
 
             // Case 3: User profile URLs (userurl).
-            // Supported shape: user/{something}/{username}.
+            // Supported shape: user/profile/{username}.
             if (in_array('userurl', $cleanurltype) && !$responseuri && $parts[0] === 'user') {
                 $user = $DB->get_record('user', ['username' => $uniquename]);
                 if ($user && count($parts) === 3) {

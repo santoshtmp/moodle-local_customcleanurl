@@ -180,7 +180,7 @@ class clean_url {
 
         // For cleanurl_type = userurl.
         if (in_array('userurl', $cleanurltype)) {
-            // Url path start with /course.
+            // Url path start with /user.
             if (preg_match('#^' . $CFG->subdirpath . '/user/profile.php#', $this->path, $matches)) {
                 $this->clean_users_profile_url();
                 return;
