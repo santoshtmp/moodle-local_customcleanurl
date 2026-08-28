@@ -36,7 +36,7 @@ jobs:
 
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: plugin
 
@@ -110,7 +110,7 @@ jobs:
 
       - name: Upload Behat Faildump
         if: ${{ failure() && steps.behat.outcome == 'failure' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: Behat Faildump (${{ join(matrix.*, ', ') }})
           path: ${{ github.workspace }}/moodledata/behat_dump
