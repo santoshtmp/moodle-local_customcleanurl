@@ -48,8 +48,6 @@ require_login(null, false);
 if (!has_capability('local/customcleanurl:managecustomcleanurl', $context)) {
     throw new moodle_exception('invalidaccess', 'local_customcleanurl');
 }
-// Admin external page setup.
-admin_externalpage_setup('local_customcleanurl_defineurl');
 
 // This page is only usable when the "define custom url" clean-url type is
 // enabled, on top of the overall custom clean url feature being enabled.
