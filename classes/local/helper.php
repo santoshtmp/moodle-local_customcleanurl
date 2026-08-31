@@ -405,6 +405,10 @@ class helper {
             }
         }
 
+        if ($PAGE->pagetype == 'error-404') {
+            return;
+        }
+
         $cleanurltype = get_config('local_customcleanurl', 'cleanurl_type');
         $cleanurltype = explode(',', (string) $cleanurltype);
 
