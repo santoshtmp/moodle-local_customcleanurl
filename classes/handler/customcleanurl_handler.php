@@ -64,8 +64,9 @@ class customcleanurl_handler {
                 $data->default_url = str_replace($CFG->wwwroot, '', trim($mformdata->default_url));
                 $data->default_url = rtrim($data->default_url, '/');
                 $data->custom_url = str_replace($CFG->wwwroot, '', trim($mformdata->custom_url));
-
                 $data->timemodified = time();
+
+                $returnurl = !empty($mformdata->returnurl) ? $mformdata->returnurl : $returnurl;
 
                 if ($data->id && ($data->action == 'edit')) {
                     $dataexists = $DB->record_exists(self::$dbtable, ['id' => $data->id]);
@@ -83,7 +84,7 @@ class customcleanurl_handler {
                     }
                 }
             } catch (\Throwable $th) {
-                $message = get_string('data_saved_error', 'local_customcleanurl');
+                $message = get_string('data_saved_error', 'local_customcleanurl') . " : " . $th->getMessage();
             }
         }
         if (!$message) {
@@ -157,6 +158,53 @@ class customcleanurl_handler {
     }
 
     /**
+     * Populate the add form.
+     *
+     * @param \moodleform $mform     The Moodle form instance.
+     * @return void Outputs form UI or redirects if record is missing.
+     */
+    public static function add_form($mform) {
+        global $OUTPUT, $DB, $CFG;
+
+        $defaulturlpath = optional_param('default_url', '', PARAM_PATH);
+        $returnurl = optional_param('returnurl', '', PARAM_URL);
+        $clearurl = '';
+        if ($defaulturlpath) {
+            $defaultmoodleurl = new moodle_url($defaulturlpath);
+            $data = $DB->get_record(
+                'local_customcleanurl',
+                [
+                    'default_url' => $defaulturlpath,
+                    'cleanurl_type' => 'defineurl',
+                ],
+            );
+            if ($data) {
+                $clearurl = $data->custom_url;
+            } else {
+                $clearurl = str_replace($CFG->wwwroot, '', $defaultmoodleurl->out());
+            }
+        }
+
+        $entry = new stdClass();
+        $entry->id = isset($data->id) ? $data->id : 0;
+        $entry->default_url = $defaulturlpath;
+        $entry->custom_url = rawurldecode($clearurl);
+        $entry->returnurl = $returnurl;
+        $entry->action = 'edit';
+        $mform->set_data($entry);
+
+        // ... output content
+        echo $OUTPUT->header();
+        echo html_writer::start_tag('div', ['class' => 'add-custom-url-wrapper mt-4 mb-4']);
+        echo html_writer::tag('h3', get_string('edit_custom_url_title', 'local_customcleanurl'));
+        $mform->display();
+        echo html_writer::end_tag('div');
+
+        echo $OUTPUT->footer();
+        die;
+    }
+
+    /**
      * Generate and return a paginated table of custom clean URLs.
      *
      * @param string $pagepath
@@ -167,7 +215,20 @@ class customcleanurl_handler {
     public static function get_custom_url_data_table($pagepath, int $perpage = 12, $cleanurltype = 'defineurl') {
         global $CFG, $DB, $PAGE;
         $outputdata = '';
-        $pageurl = new moodle_url($pagepath);
+
+        // Read filter values from the request.
+        $filterdefaulturl = optional_param('filter_default_url', '', PARAM_RAW);
+        $filtercustomurl  = optional_param('filter_custom_url', '', PARAM_RAW);
+
+        // Base url must carry the current filters so sorting/paging doesn't lose them.
+        $pageurl = new moodle_url($pagepath, ['cleanurltype' => $cleanurltype]);
+        if ($filterdefaulturl !== '') {
+            $pageurl->param('filter_default_url', $filterdefaulturl);
+        }
+        if ($filtercustomurl !== '') {
+            $pageurl->param('filter_custom_url', $filtercustomurl);
+        }
+
         // ... table generate.
         require_once($CFG->libdir . '/tablelib.php');
         $table = new flexible_table('moodle-clean-custom-url-data');
@@ -177,11 +238,12 @@ class customcleanurl_handler {
             'custom_url',
             'action',
         ];
+        $customurlheader = ($cleanurltype == 'defineurl') ?
+            get_string('custom_url', 'local_customcleanurl') : get_string('redirect_url', 'local_customcleanurl');
         $tableheaders = [
             get_string('sn', 'local_customcleanurl'),
             get_string('default_url', 'local_customcleanurl'),
-            ($cleanurltype == 'defineurl') ?
-                get_string('custom_url', 'local_customcleanurl') : get_string('redirect_url', 'local_customcleanurl'),
+            $customurlheader,
             get_string('action'),
         ];
         $table->define_columns($tablecolumns);
@@ -201,18 +263,114 @@ class customcleanurl_handler {
         $table->no_sorting('action');
         $table->no_sorting('id');
         $table->setup();
-        $table->pagesize($perpage, $DB->count_records(self::$dbtable, ['cleanurl_type' => $cleanurltype]));
+
+        if ($cleanurltype == 'defineurl') {
+            // Build the filter form.
+            $filterform = html_writer::start_tag('form', [
+                'method' => 'get',
+                'action' => (new moodle_url($pagepath))->out(false),
+                'class' => 'mb-3',
+            ]);
+
+            // Hidden field so the current tab/type survives the GET submit.
+            $filterform .= html_writer::empty_tag('input', [
+                'type' => 'hidden',
+                'name' => 'cleanurltype',
+                'value' => $cleanurltype,
+            ]);
+
+            $filterform .= html_writer::start_div('row');
+
+            // Moodle URL filter.
+            $filterform .= html_writer::start_div('col-12 col-md-6');
+            $filterform .= html_writer::label(
+                get_string('default_url', 'local_customcleanurl'),
+                'filter_default_url',
+                true,
+                ['class' => 'font-weight-normal']
+            );
+            $filterform .= html_writer::empty_tag('input', [
+                'type' => 'text',
+                'id' => 'filter_default_url',
+                'name' => 'filter_default_url',
+                'value' => $filterdefaulturl,
+                'class' => 'form-control',
+                'placeholder' => 'Search Moodle URL',
+            ]);
+            $filterform .= html_writer::end_div();
+
+            // Custom URL filter.
+            $filterform .= html_writer::start_div('col-12 col-md-6');
+            $filterform .= html_writer::label(
+                $customurlheader,
+                'filter_custom_url',
+                true,
+                ['class' => 'font-weight-normal']
+            );
+            $filterform .= html_writer::empty_tag('input', [
+                'type' => 'text',
+                'id' => 'filter_custom_url',
+                'name' => 'filter_custom_url',
+                'value' => $filtercustomurl,
+                'class' => 'form-control',
+                'placeholder' => 'Search Custom URL',
+            ]);
+            $filterform .= html_writer::end_div();
+
+            $filterform .= html_writer::end_div();
+            // ... end div.row
+
+            // Buttons on their own row below the fields.
+            $filterform .= html_writer::start_div('row mt-2');
+            $filterform .= html_writer::start_div('col-12 d-flex justify-content-start');
+            $filterform .= html_writer::tag(
+                'button',
+                get_string('search'),
+                [
+                    'type' => 'submit',
+                    'class' => 'btn btn-primary me-2',
+                ]
+            );
+            $clearurl = new moodle_url($pagepath, ['cleanurltype' => $cleanurltype]);
+            $filterform .= html_writer::link(
+                $clearurl,
+                get_string('clear'),
+                [
+                    'class' => 'btn btn-secondary',
+                ]
+            );
+            $filterform .= html_writer::end_div();
+            $filterform .= html_writer::end_div();
+
+            $filterform .= html_writer::end_tag('form');
+            // End filter form.
+        }
+
+        // Build WHERE clause including filters.
+        $where = 'cleanurl_type = :cleanurltype';
+        $sqlparams = ['cleanurltype' => $cleanurltype];
+        if ($filterdefaulturl !== '') {
+            $where .= ' AND ' . $DB->sql_like('default_url', ':filterdefaulturl', false, false);
+            $sqlparams['filterdefaulturl'] = '%' . $DB->sql_like_escape($filterdefaulturl) . '%';
+        }
+        if ($filtercustomurl !== '') {
+            $where .= ' AND ' . $DB->sql_like('custom_url', ':filtercustomurl', false, false);
+            $sqlparams['filtercustomurl'] = '%' . $DB->sql_like_escape($filtercustomurl) . '%';
+        }
+
+        $table->pagesize($perpage, $DB->count_records_select(self::$dbtable, $where, $sqlparams));
         $limitfrom = $table->get_page_start();
         $limitnum = $table->get_page_size();
         if (isset($_GET['ssort']) && $table->get_sql_sort()) {
             $sort = $table->get_sql_sort();
         } else {
-            $sort = 'id DESC';
+            $sort = 'timemodified DESC';
         }
         // ... get data from db.
-        $datarecords = $DB->get_records(
+        $datarecords = $DB->get_records_select(
             self::$dbtable,
-            ['cleanurl_type' => $cleanurltype],
+            $where,
+            $sqlparams,
             $sort,
             $fields = '*',
             $limitfrom,
@@ -255,7 +413,7 @@ class customcleanurl_handler {
             }
         }
         $table->finish_output();
-        $outputdata = ob_get_contents();
+        $outputdata = $filterform . ob_get_contents();
         ob_end_clean();
 
         $PAGE->requires->js_call_amd('local_customcleanurl/customcleanurl', 'conformdelete');

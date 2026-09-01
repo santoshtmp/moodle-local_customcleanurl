@@ -15,33 +15,31 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Hook callbacks
- * https://moodledev.io/docs/4.5/apis/core/hooks
- * https://docs.moodle.org/dev/Callbacks
+ * Capabilities for local_customcleanurl plugin.
  *
  * @package    local_customcleanurl
- * @copyright  2025 https://santoshmagar.com.np/
- * @author     santoshtmp
+ * @copyright  2026 https://santoshmagar.com.np/
+ * @author     santoshmagar.com.np
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$callbacks = [
-    [
-        'hook' => core\hook\output\before_http_headers::class,
-        'callback' => [local_customcleanurl\hooks\hook_callbacks::class, 'before_http_headers'],
-        'priority' => 0,
+$capabilities = [
+    // Capability to manage custom URL mappings.
+    'local/customcleanurl:managecustomcleanurl' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
     ],
-    [
-        'hook' => core\hook\after_config::class,
-        'callback' => [local_customcleanurl\hooks\hook_callbacks::class, 'after_config'],
-        'priority' => 0,
-    ],
-    [
-        'hook'     => \core\hook\navigation\secondary_extend::class,
-        'callback' => [\local_customcleanurl\hooks\hook_callbacks::class, 'extend_secondary_navigation'],
-        'priority' => 500,
+    // Capability to manage URL redirects.
+    'local/customcleanurl:manageurlredirect' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
     ],
 ];

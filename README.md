@@ -79,44 +79,6 @@ location / {
 }
 ```
 
-#### Recommended full example (common Moodle + PHP-FPM setup)
-
-```nginx
-server {
-    listen 80;
-    # listen 443 ssl http2;   # enable if using SSL
-    server_name your_domain.com;
-
-    root /path/to/moodle;
-    index index.php index.html;
-
-    client_max_body_size 200M;
-
-    # Clean URL routing via customcleanurl
-    location / {
-        try_files $uri $uri/ /local/customcleanurl/route.php?$query_string;
-    }
-
-    # PHP handling
-    location ~ [^/]\.php(/|$) {
-        fastcgi_split_path_info ^(.+\.php)(/.*)$;
-        include fastcgi_params;
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-        fastcgi_param PATH_INFO $fastcgi_path_info;
-        fastcgi_pass unix:/run/php/php8.2-fpm.sock;   # adjust to your PHP version
-    }
-
-    # Optional: Custom error pages
-    error_page 403 /local/customcleanurl/404.php;
-    error_page 404 /local/customcleanurl/404.php;
-
-    # Deny access to hidden files
-    location ~ /\. {
-        deny all;
-    }
-}
-```
-
 > After changing the Nginx config, test and reload:
 > ```bash
 > sudo nginx -t
