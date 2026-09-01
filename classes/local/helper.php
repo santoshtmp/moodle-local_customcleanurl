@@ -394,7 +394,7 @@ class helper {
         }
 
         $currentpagelayout = $PAGE->pagelayout;
-        if (in_array($currentpagelayout, ['frontpage', 'admin'], true)) {
+        if (in_array($currentpagelayout, ['frontpage', 'admin', 'mydashboard', 'mypublic', 'mycourses'], true)) {
             return;
         }
 
@@ -405,7 +405,7 @@ class helper {
             }
         }
 
-        if ($PAGE->pagetype == 'error-404') {
+        if (in_array($PAGE->pagetype, ['error-404', 'grade-report-overview-index', 'user-files'], true)) {
             return;
         }
 
