@@ -40,7 +40,7 @@ $plugin->version = 2026092800;
 $plugin->maturity = MATURITY_STABLE;
 
 // This is the version of Moodle this plugin requires.
-$plugin->requires = 2024100100;
+$plugin->requires = 2024100101;
 
 // This is the release of Moodle this plugin requires.
 $plugin->supported = [405, 502];
