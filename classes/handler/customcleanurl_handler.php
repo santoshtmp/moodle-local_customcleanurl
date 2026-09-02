@@ -44,17 +44,93 @@ class customcleanurl_handler {
     protected static $dbtable = 'local_customcleanurl';
 
     /**
+     * Validate and save custom clean URL data with hook support.
+     *
+     * This method validates form data using the customcleanurl_form validation rules,
+     *
+     * @param \stdClass $mformdata Form data containing default_url, custom_url, and optionally id.
+     * @param moodle_url|string $returnurl URL to redirect to after saving.
+     * @param string $cleanurltype Type of clean URL (e.g., 'defineurl'). Defaults to 'defineurl'.
+     * @return array Array with keys:
+     *   - 'status' (bool): True if saved successfully, false otherwise
+     *   - 'errors' (array): Validation errors if any
+     *   - 'message' (string): Success or error message
+     *   - 'id' (int): Record ID if saved successfully, 0 otherwise
+     */
+    public static function validate_and_save_custom_url($mformdata, $returnurl, $cleanurltype = 'defineurl') {
+        global $CFG;
+
+        $result = [
+            'status' => false,
+            'errors' => [],
+            'message' => '',
+            'id' => 0,
+        ];
+
+        // Prepare form data for validation.
+        $formdata = [
+            'default_url' => $mformdata->default_url ?? '',
+            'custom_url' => $mformdata->custom_url ?? '',
+            'id' => $mformdata->id ?? 0,
+            'action' => $mformdata->action ?? '',
+            'type' => $mformdata->type ?? $cleanurltype,
+        ];
+
+        // Create form instance and validate.
+        $form = new \local_customcleanurl\form\customcleanurl_form(
+            null,
+            ['type' => $cleanurltype]
+        );
+        $validationerrors = $form->validation($formdata, []);
+
+        // Prepare data object for hook.
+        $data = new stdClass();
+        $data->id = $formdata['id'];
+        $data->default_url = $formdata['default_url'];
+        $data->custom_url = $formdata['custom_url'];
+        $data->action = $formdata['action'];
+        $data->type = $formdata['type'];
+
+        // Check if there are validation errors.
+        if (!empty($validationerrors)) {
+            $result['errors'] = $validationerrors;
+            $result['message'] = get_string('form_validation_failed', 'local_customcleanurl');
+            return $result;
+        }
+
+        // If validation passed, save the data.
+        try {
+            // Create mformdata object with validated data for save_data.
+            $savedata = new stdClass();
+            $savedata->id = $data->id;
+            $savedata->default_url = $data->default_url;
+            $savedata->custom_url = $data->custom_url;
+            $savedata->action = $data->action;
+            $savedata->type = $data->type;
+            $savedata->returnurl = $mformdata->returnurl ?? '';
+            // Pass the (possibly modified) type from hook, not original $cleanurltype
+            $result = self::save_data($savedata, $returnurl, $savedata->type, false);
+        } catch (\Throwable $th) {
+            $result['message'] = get_string('data_saved_error', 'local_customcleanurl') . " : " . $th->getMessage();
+        }
+
+        return $result;
+    }
+
+    /**
      * Save or update a custom clean URL entry.
      *
      * @param \stdClass $mformdata       Form data containing default_url, custom_url, and optionally id.
      * @param moodle_url|string $returnurl URL to redirect to after saving.
      * @param string $cleanurltype Type of clean URL (e.g., 'defineurl'). Defaults to 'defineurl'.
-     * @return void Redirects to the given return URL with a status message.
+     * @param bool $redirect Whether to redirect after saving.
+     * @return array|void Array with 'status', 'message', 'returnurl', 'id' if not redirecting.
      */
-    public static function save_data($mformdata, $returnurl, $cleanurltype = 'defineurl') {
+    public static function save_data($mformdata, $returnurl, $cleanurltype = 'defineurl', $redirect = true) {
         global $DB, $CFG;
         $status = false;
         $message = '';
+        $recordid = 0;
         $data = new stdClass();
         $data->id = $mformdata->id;
         $data->action = $mformdata->action;
@@ -68,17 +144,19 @@ class customcleanurl_handler {
 
                 $returnurl = !empty($mformdata->returnurl) ? $mformdata->returnurl : $returnurl;
 
-                if ($data->id && ($data->action == 'edit')) {
+                if ($data->id || ($data->action == 'edit')) {
                     $dataexists = $DB->record_exists(self::$dbtable, ['id' => $data->id]);
                     if ($dataexists) {
                         $status = $DB->update_record(self::$dbtable, $data);
+                        $recordid = $data->id;
                         if ($status) {
                             $message = get_string('data_updated', 'local_customcleanurl');
                         }
                     }
                 } else {
                     $data->timecreated = time();
-                    $status = $DB->insert_record(self::$dbtable, $data);
+                    $recordid = $DB->insert_record(self::$dbtable, $data);
+                    $status = (bool)$recordid;
                     if ($status) {
                         $message = get_string('data_saved', 'local_customcleanurl');
                     }
@@ -91,7 +169,16 @@ class customcleanurl_handler {
             $message = get_string('something_went_wrong', 'local_customcleanurl');
         }
 
-        redirect($returnurl, $message);
+        if ($redirect) {
+            redirect($returnurl, $message);
+        } else {
+            return [
+                'status' => $status,
+                'message' => $message,
+                'returnurl' => $returnurl,
+                'id' => $recordid,
+            ];
+        }
     }
 
     /**

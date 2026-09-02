@@ -109,6 +109,7 @@ $string['edit_custom_url_title'] = 'Edit custom url';
 $string['data_saved'] = 'Custom Clean URL data is sucesfully saved.';
 $string['data_updated'] = 'Custom Clean URL data is sucesfully updated.';
 $string['data_saved_error'] = 'Data error on save.';
+$string['form_validation_failed'] = 'Form validation failed. Please check the errors and try again.';
 $string['something_went_wrong'] = 'Something went wrong.';
 $string['data_delete'] = 'Custom Clean URL data successfully deleted.';
 $string['data_delete_missing'] = 'Custom Clean URL delete data is missing.';
