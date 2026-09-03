@@ -146,7 +146,7 @@ class customcleanurl_handler {
 
                 $transaction = $DB->start_delegated_transaction();
 
-                if ($data->id || ($data->action == 'edit')) {
+                if ($data->id && ($data->action == 'edit')) {
                     $dataexists = $DB->record_exists(self::$dbtable, ['id' => $data->id]);
                     if ($dataexists) {
                         $status = $DB->update_record(self::$dbtable, $data);
