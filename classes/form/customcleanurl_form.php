@@ -85,7 +85,7 @@ class customcleanurl_form extends \moodleform {
 
         $mform->addElement('hidden', 'action');
         $mform->setType('action', PARAM_TEXT);
-        $mform->setDefault('action', '');
+        $mform->setDefault('action', 'edit');
 
         $mform->addElement('hidden', 'type');
         $mform->setType('type', PARAM_TEXT);
