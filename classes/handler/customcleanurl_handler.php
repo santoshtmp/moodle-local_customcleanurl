@@ -134,7 +134,7 @@ class customcleanurl_handler {
         $data = new stdClass();
         $data->id = $mformdata->id;
         $data->action = $mformdata->action;
-        if ($cleanurltype == $mformdata->type) {
+        if ($cleanurltype == $mformdata->type && $data->action == 'edit') {
             try {
                 $data->cleanurl_type = $cleanurltype;
                 $data->default_url = str_replace($CFG->wwwroot, '', trim($mformdata->default_url));
@@ -146,7 +146,7 @@ class customcleanurl_handler {
 
                 $transaction = $DB->start_delegated_transaction();
 
-                if ($data->id && ($data->action == 'edit')) {
+                if ($data->id) {
                     $dataexists = $DB->record_exists(self::$dbtable, ['id' => $data->id]);
                     if ($dataexists) {
                         $status = $DB->update_record(self::$dbtable, $data);
@@ -165,7 +165,6 @@ class customcleanurl_handler {
                 }
 
                 $transaction->allow_commit();
-                
             } catch (\Throwable $th) {
                 $message = get_string('data_saved_error', 'local_customcleanurl') . " : " . $th->getMessage();
             }
