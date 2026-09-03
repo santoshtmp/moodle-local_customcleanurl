@@ -14,6 +14,8 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="default_url_unique" TYPE="unique" FIELDS="default_url"/>
+        <KEY NAME="custom_url_unique" TYPE="unique" FIELDS="custom_url"/>
       </KEYS>
     </TABLE>
 

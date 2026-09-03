@@ -34,7 +34,7 @@ $plugin->component = 'local_customcleanurl';
 $plugin->release = '1.1.7';
 
 // This is the version of the plugin.
-$plugin->version = 2026092802;
+$plugin->version = 2026092803;
 
 // This is a stable release.
 $plugin->maturity = MATURITY_STABLE;
