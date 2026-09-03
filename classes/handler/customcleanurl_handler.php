@@ -144,6 +144,8 @@ class customcleanurl_handler {
 
                 $returnurl = !empty($mformdata->returnurl) ? $mformdata->returnurl : $returnurl;
 
+                $transaction = $DB->start_delegated_transaction();
+
                 if ($data->id || ($data->action == 'edit')) {
                     $dataexists = $DB->record_exists(self::$dbtable, ['id' => $data->id]);
                     if ($dataexists) {
@@ -161,6 +163,9 @@ class customcleanurl_handler {
                         $message = get_string('data_saved', 'local_customcleanurl');
                     }
                 }
+
+                $transaction->allow_commit();
+                
             } catch (\Throwable $th) {
                 $message = get_string('data_saved_error', 'local_customcleanurl') . " : " . $th->getMessage();
             }
