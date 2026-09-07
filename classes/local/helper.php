@@ -207,7 +207,35 @@ class helper {
             if (in_array('userurl', $cleanurltype) && !$responseuri && $parts[0] === 'user') {
                 $user = $DB->get_record('user', ['username' => $uniquename]);
                 if ($user && count($parts) === 3) {
-                    $responseuri = "/user/profile.php?id=" . $user->id;
+                    $isclassic = (optional_param('classic', 0, PARAM_INT) == 1) ||
+                                 (optional_param('noredirect', 0, PARAM_INT) == 1) ||
+                                 !empty($requestmoodleurl->param('classic')) ||
+                                 !empty($requestmoodleurl->param('noredirect'));
+
+                    $usesmartprofile = !$isclassic &&
+                                       (bool)get_config('local_smartprofile', 'enableredirect') &&
+                                       file_exists($CFG->dirroot . '/local/smartprofile/index.php');
+                    if ($usesmartprofile) {
+                        $responseuri = "/local/smartprofile/index.php?id=" . $user->id;
+                    } else {
+                        $responseuri = "/user/profile.php?id=" . $user->id;
+                    }
+                }
+            }
+
+            // Case 4: SmartLearn Theme Custom Pages (e.g. /about-us, /pricing).
+            if (!$responseuri) {
+                $slug = trim($requestpath, '/');
+                try {
+                    $checkpage = $DB->get_record('theme_smartlearn_pages', ['slug' => $slug]);
+                    if (!$checkpage) {
+                        $checkpage = $DB->get_record_select('theme_smartlearn_pages', 'LOWER(slug) = ?', [strtolower($slug)]);
+                    }
+                    if ($checkpage) {
+                        $responseuri = "/theme/smartlearn/view_page.php?slug=" . urlencode($checkpage->slug);
+                    }
+                } catch (\Throwable $e) {
+                    // Table might not exist or other error.
                 }
             }
         }
@@ -299,7 +327,10 @@ class helper {
                 '/course/edit.php',
                 '/course/index.php',
             ],
-            'customcleanurl_userurl' => '/user/profile.php',
+            'customcleanurl_userurl' => [
+                '/user/profile.php',
+                '/local/smartprofile/index.php',
+            ],
         ];
         foreach ($urltypes as $key => $item) {
             if (is_array($item)) {

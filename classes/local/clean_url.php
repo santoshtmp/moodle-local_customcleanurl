@@ -180,11 +180,17 @@ class clean_url {
 
         // For cleanurl_type = userurl.
         if (in_array('userurl', $cleanurltype)) {
-            // Url path start with /user.
-            if (preg_match('#^' . $CFG->subdirpath . '/user/profile.php#', $this->path, $matches)) {
+            // Url path start with /user/profile.php or /local/smartprofile/index.php.
+            if (preg_match('#^' . $CFG->subdirpath . '(/user/profile\.php|/local/smartprofile/index\.php)#', $this->path, $matches)) {
                 $this->clean_users_profile_url();
                 return;
             }
+        }
+
+        // For SmartLearn Custom Pages (/theme/smartlearn/page.php or view_page.php).
+        if (preg_match('#^' . $CFG->subdirpath . '/theme/smartlearn/(view_)?page\.php#', $this->path, $matches)) {
+            $this->clean_smartlearn_page_url();
+            return;
         }
     }
 
@@ -265,6 +271,11 @@ class clean_url {
             return null;
         }
 
+        // If classic or noredirect is requested, keep the raw Moodle profile URL.
+        if (!empty($this->params['classic']) || !empty($this->params['noredirect'])) {
+            return null;
+        }
+
         global $DB, $CFG;
         if (!empty($CFG->subdirpath)) {
             if (strpos($this->path, $CFG->subdirpath) === 0) {
@@ -275,13 +286,44 @@ class clean_url {
         $user = $DB->get_record('user', ['id' => $this->params['id']]);
         if ($user) {
             unset($this->params['id']);
-            $cleannewpath = $this->remove_index_php();
-            $cleannewpath = $cleannewpath . '/' . rawurlencode(strtolower($user->username));
+            $cleannewpath = '/user/profile/' . rawurlencode(strtolower($user->username));
             if ($this->check_path_allowed($cleannewpath)) {
                 $this->path = $cleannewpath;
             }
         }
         return $user;
+    }
+
+    /**
+     * Cleans SmartLearn Custom Page URLs into user-friendly format (e.g., /about-us).
+     *
+     * @return void
+     */
+    private function clean_smartlearn_page_url() {
+        global $DB, $CFG;
+        $slug = $this->params['slug'] ?? '';
+        $id = $this->params['id'] ?? 0;
+
+        if ($slug) {
+            unset($this->params['slug']);
+            $cleannewpath = '/' . urlencode(strtolower($slug));
+            if ($this->check_path_allowed($cleannewpath)) {
+                $this->path = $cleannewpath;
+            }
+        } else if ($id > 0) {
+            try {
+                $page = $DB->get_record('theme_smartlearn_pages', ['id' => (int)$id]);
+                if ($page && !empty($page->slug)) {
+                    unset($this->params['id']);
+                    $cleannewpath = '/' . urlencode(strtolower($page->slug));
+                    if ($this->check_path_allowed($cleannewpath)) {
+                        $this->path = $cleannewpath;
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Table might not exist or other error.
+            }
+        }
     }
 
     /**
